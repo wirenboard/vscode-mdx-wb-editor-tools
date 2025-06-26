@@ -1,0 +1,68 @@
+/* media/styles.css */
+
+/* Базовые стили */
+body {
+  padding: 1em;
+  font-family: sans-serif;
+  background-color: #f2f4f8;
+  color: #0a1f44;
+}
+
+/* Photo-компонент */
+.mdx-photo {
+  margin: 1em;
+}
+.mdx-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.mdx-photo-caption {
+  text-align: center;
+  color: #0a1f44;
+  margin-top: 0.5em;
+}
+/* Выравнивание */
+.float-left   { float: left; }
+.float-right  { float: right; }
+.float-center { display: block; margin: 1em auto; }
+
+/* Галерея */
+.mdx-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5em;
+  margin: 1em 0;
+}
+.mdx-gallery figure {
+  margin: 0;
+}
+.mdx-gallery img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.mdx-gallery figcaption {
+  text-align: center;
+  color: #0a1f44;
+  font-size: 0.8em;
+  margin-top: 0.3em;
+}
+
+/* ------ Frontmatter table ------ */
+.mdx-frontmatter {
+  border-collapse: collapse;
+  margin-bottom: 1em;
+  width: 100%;
+}
+.mdx-frontmatter th,
+.mdx-frontmatter td {
+  border: 1px solid #ccc;
+  padding: 0.4em 0.6em;
+}
+.mdx-frontmatter th {
+  background-color: #f0f0f0;
+  text-align: left;
+  white-space: nowrap;
+  width: 1%;
+}

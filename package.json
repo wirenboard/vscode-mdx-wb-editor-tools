@@ -1,0 +1,41 @@
+{
+  "name": "mdx-preview",
+  "publisher": "wirenboard",
+  "displayName": "MDX Preview",
+  "description": "Preview MDX-style markdown with components for Wiren Board",
+  "version": "0.0.8",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:mdx-preview.showPreview"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.0.2",
+    "@types/node": "^20.5.6",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "markdown-it": "^14.0.0"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdx-preview.showPreview",
+        "title": "Show MDX Preview"
+      }
+    ]
+  }
+}
