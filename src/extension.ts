@@ -11,6 +11,7 @@ let mainTemplate: HandlebarsTemplateDelegate;
 let photoTemplate: HandlebarsTemplateDelegate;
 let galleryTemplate: HandlebarsTemplateDelegate;
 let videoPlayerTemplate: HandlebarsTemplateDelegate;
+let videoGalleryTemplate: HandlebarsTemplateDelegate
 
 export function activate(context: vscode.ExtensionContext) {
   const templatesDir = path.join(context.extensionPath, 'templates');
@@ -18,6 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
   photoTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'photo.html'), 'utf8'));
   galleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'gallery.html'), 'utf8'));
   videoPlayerTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-player.html'), 'utf8'));
+  videoGalleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-gallery.html'), 'utf8'));
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
@@ -116,7 +118,22 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
       coverIsSet: !!attrs.cover
     });
-  }
+  },
+
+  'video-gallery': (attrs, webview, docUri) => {
+    try {
+      const rawItems = JSON.parse(attrs.data || '[]') as Array<[string, string, string?]>;
+      const videos = rawItems.map(([url, caption, src]) => ({
+        url: String(url), // Обязательное поле: URL видео
+        caption: caption ? String(caption) : '',
+        thumbnail: src ? resolveRelativePath(webview, docUri, String(src)) : undefined,
+      }));
+      return videoGalleryTemplate({ videos });
+    } catch (error) {
+      console.error('Invalid video gallery data:', error);
+      return videoGalleryTemplate({ videos: [] }); // Фолбэк
+    }
+  },
 };
 
 

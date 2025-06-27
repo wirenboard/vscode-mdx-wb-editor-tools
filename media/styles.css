@@ -103,3 +103,25 @@ body {
   border-bottom: 12px solid transparent;
   filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
 }
+
+/* Видео галерея */
+.mdx-video-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5em;
+  margin: 1em 0;
+}
+.mdx-video-gallery-item {
+  margin: 0;
+}
+.mdx-video-gallery img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.mdx-video-gallery-caption {
+  text-align: center;
+  color: #0a1f44;
+  font-size: 0.9em;
+  margin-top: 0.3em;
+}
