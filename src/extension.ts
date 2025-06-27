@@ -23,10 +23,9 @@ export function activate(context: vscode.ExtensionContext) {
   videoGalleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-gallery.html'), 'utf8'));
   frontmatterTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'frontmatter.html'), 'utf8'));
 
-  Handlebars.registerHelper('isImage', function(key) {
-    return ['cover', 'image', 'thumbnail'].includes(String(key).toLowerCase());
-  });
-
+  Handlebars.registerHelper('isTitle', (key) => key === 'title');
+  Handlebars.registerHelper('isImage', (key) => ['cover', 'logo'].includes(String(key)));
+  Handlebars.registerHelper('isCover', (key) => key === 'cover');
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
       if (previewPanel && previewDocumentUri?.toString() === document.uri.toString()) {
@@ -136,12 +135,23 @@ const componentRenderers: Record<string, ComponentRenderer> = {
 
   frontmatter: (attrs, webview, docUri) => {
     const items: Record<string, string> = {};
+    let title = '';
+
     for (const [key, value] of Object.entries(attrs)) {
-      items[key] = ['cover', 'image', 'thumbnail'].includes(key.toLowerCase())
-        ? resolveRelativePath(webview, docUri, value)
-        : value;
+      if (key === 'title') {
+        title = value;
+      } else {
+        items[key] = ['cover', 'logo'].includes(key)
+          ? resolveRelativePath(webview, docUri, value)
+          : value;
+      }
     }
-    return frontmatterTemplate({ items });
+
+    return frontmatterTemplate({
+      title,
+      cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
+      items
+    });
   }
 };
 
@@ -196,7 +206,6 @@ function preprocessMarkdown(
   webview: vscode.Webview,
   documentUri: vscode.Uri
 ): string {
-  // Process frontmatter if exists
   const frontmatterData = parseFrontmatter(text);
   const processedText = frontmatterData?.content || text;
 
@@ -209,7 +218,6 @@ function preprocessMarkdown(
     );
   }
 
-  // Process regular components
   const withComponents = processComponents(processedText, webview, documentUri);
 
   return frontmatterHtml + withComponents;
