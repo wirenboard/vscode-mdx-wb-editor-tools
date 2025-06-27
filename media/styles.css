@@ -35,7 +35,7 @@ body {
   gap: 0.5em;
   margin: 1em 0;
 }
-.mdx-gallery figure {
+.mdx-gallery-item {
   margin: 0;
 }
 .mdx-gallery img {
