@@ -1,0 +1,15 @@
+<div class="mdx-video-gallery">
+  {{#each videos}}
+  <div class="mdx-video-gallery-item">
+    <a href="{{url}}" target="_blank" class="mdx-video-link">
+      {{#if coverIsSet}}
+      <img src="{{cover}}" alt="Cover">
+      {{else}}
+      <div class="mdx-video-gallery-placeholder"></div>
+      {{/if}}
+      <div class="mdx-video-gallery-play-icon"><span></span></div>
+    </a>
+    {{#if hasCaption}}<div class="mdx-video-gallery-caption">{{caption}}</div>{{/if}}
+  </div>
+  {{/each}}
+</div>
