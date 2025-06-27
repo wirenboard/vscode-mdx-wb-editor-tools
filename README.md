@@ -105,12 +105,5 @@ renderers.myComponent = (attrs, webview, docUri) => {
 
 Если внутри компонента есть картинки, надо преобразовать пути:
 ```ts
-// docUri — URI текущего MD-документа
-// path — относительный путь к файлу, например 'images/pic.jpg'
-const fileUri = vscode.Uri.joinPath(docUri, '..', path);
-// преобразуем в ссылку, доступную Webview
-const webviewUri = webview.asWebviewUri(fileUri).toString();
-
-// ввозвращаем
-return webviewUri;
+const webviewUri = resolveRelativePath(webview, documentUri, relativePath)
 ```
