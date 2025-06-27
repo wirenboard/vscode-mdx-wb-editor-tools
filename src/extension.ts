@@ -13,14 +13,6 @@ let galleryTemplate: HandlebarsTemplateDelegate;
 let videoPlayerTemplate: HandlebarsTemplateDelegate;
 
 export function activate(context: vscode.ExtensionContext) {
-  Handlebars.registerHelper('resolvePath', (relativePath: string) => {
-    return resolveRelativePath(previewPanel?.webview!, previewDocumentUri!, relativePath);
-  });
-
-  Handlebars.registerHelper('styleIf', (condition: boolean, style: string) => {
-    return condition ? `style="${style}"` : '';
-  });
-
   const templatesDir = path.join(context.extensionPath, 'templates');
   mainTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'main.html'), 'utf8'));
   photoTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'photo.html'), 'utf8'));
