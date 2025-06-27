@@ -1,4 +1,8 @@
 <div class="mdx-gallery">
-  {{items}}
+  {{#each images}}
+  <figure>
+    <img src="{{src}}" alt="{{alt}}">
+    {{#if caption}}<figcaption>{{caption}}</figcaption>{{/if}}
+  </figure>
+  {{/each}}
 </div>
-

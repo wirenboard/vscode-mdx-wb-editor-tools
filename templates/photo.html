@@ -1,4 +1,4 @@
-<figure class="mdx-photo float-{{float}}" style="width:{{width}};">
-  <img src="{{src}}" alt="{{caption}}" loading="lazy" />
-  {{captionBlock}}
-</figure>
+<div class="mdx-photo {{floatClass}}">
+  <img src="{{src}}" alt="{{alt}}" {{style}}>
+  {{#if caption}}<div class="mdx-photo-caption">{{caption}}</div>{{/if}}
+</div>

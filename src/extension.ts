@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import MarkdownIt from 'markdown-it';
+import * as vscode from 'vscode';
 
 let previewPanel: vscode.WebviewPanel | undefined;
 let previewDocUri: vscode.Uri | undefined;
@@ -10,14 +10,12 @@ let mainTpl: string;
 let photoTpl: string;
 let galleryTpl: string;
 
-// Загрузка шаблонов один раз
 export function activate(context: vscode.ExtensionContext) {
   const tdir = path.join(context.extensionPath, 'templates');
-  mainTpl    = fs.readFileSync(path.join(tdir, 'main.html'), 'utf8');
-  photoTpl   = fs.readFileSync(path.join(tdir, 'photo.html'), 'utf8');
+  mainTpl = fs.readFileSync(path.join(tdir, 'main.html'), 'utf8');
+  photoTpl = fs.readFileSync(path.join(tdir, 'photo.html'), 'utf8');
   galleryTpl = fs.readFileSync(path.join(tdir, 'gallery.html'), 'utf8');
 
-  // Авто-обновление по сохранению
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((doc) => {
       if (previewPanel && previewDocUri?.toString() === doc.uri.toString()) {
@@ -26,7 +24,6 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Команда предпросмотра
   const cmd = vscode.commands.registerCommand(
     'mdx-preview.showPreview',
     () => {
@@ -65,81 +62,77 @@ function updatePreview(doc: vscode.TextDocument, context: vscode.ExtensionContex
   );
 }
 
-type Renderer = (
-  attrs: Record<string,string>,
+type ComponentRenderer = (
+  attrs: Record<string, string>,
   webview: vscode.Webview,
   docUri: vscode.Uri
 ) => string;
 
-const renderers: Record<string, Renderer> = {
+const renderers: Record<string, ComponentRenderer> = {
   photo: (attrs, webview, docUri) => {
-    const src     = attrs.src ?? '';
-    const caption = attrs.caption ?? '';
-    const width   = attrs.width ? (attrs.width.endsWith('%') ? attrs.width : `${parseInt(attrs.width,10)}px`) : '';
-    const float   = attrs.float ?? 'none';
-
-    const imgPath = vscode.Uri.joinPath(docUri, '..', src);
-    const uri     = webview.asWebviewUri(imgPath).toString();
-
-    const captionBlock = caption
-      ? `<figcaption class="mdx-photo-caption">${caption}</figcaption>`
+    const srcUri = attrs.src
+      ? webview.asWebviewUri(vscode.Uri.joinPath(docUri, '..', attrs.src)).toString()
       : '';
-
     return renderTemplate(photoTpl, {
-      src: uri,
-      captionBlock,
-      width,
-      float
+      src: srcUri,
+      alt: attrs.alt || '',
+      caption: attrs.caption,
+      style: attrs.width ? `style="width:${attrs.width}"` : '',
+      floatClass: attrs.float ? `float-${attrs.float}` : ''
     });
   },
-
   gallery: (attrs, webview, docUri) => {
-    let items: [string,string][];
-    try {
-      items = JSON.parse(attrs.data ?? '[]');
-    } catch {
-      return '<p><em>Invalid gallery data</em></p>';
-    }
-    const html = items.map(([src,cap]) => {
-      const imgPath = vscode.Uri.joinPath(docUri, '..', src);
-      const uri     = webview.asWebviewUri(imgPath).toString();
-      return `<figure>
-  <img src="${uri}" loading="lazy" />
-  <figcaption>${cap}</figcaption>
-</figure>`;
-    }).join('\n');
-    return renderTemplate(galleryTpl, { items: html });
+    const rawImages = JSON.parse(attrs.data || '[]');
+    const images = rawImages.map((img: any) => ({
+      src: img[0] ? webview.asWebviewUri(vscode.Uri.joinPath(docUri, '..', img[0])).toString() : '',
+      alt: img[1] || '',
+      caption: img[1] || '' // Подпись берется из второго элемента массива
+    }));
+    return renderTemplate(galleryTpl, { images });
   }
 };
 
-// Универсальный рендер шаблона
-function renderTemplate(tpl: string, data: Record<string,string>): string {
+function renderTemplate(tpl: string, data: Record<string, any>): string {
   let result = tpl;
+
+  result = result.replace(/{{#each (\w+)}}([\s\S]*?){{\/each}}/g, (_, key, content) => {
+    const items = data[key] || [];
+    return items.map((item: any) => {
+      let html = content;
+      for (const [k, v] of Object.entries(item)) {
+        html = html.replace(new RegExp(`{{${k}}}`, 'g'), v);
+      }
+      return html;
+    }).join('');
+  });
+
+  result = result.replace(/{{#if (\w+)}}([\s\S]*?){{\/if}}/g, (_, key, content) =>
+    data[key] ? content : ''
+  );
+
   for (const [key, val] of Object.entries(data)) {
-    // global replace via RegExp, безопасно для любых версий TS/JS
     result = result.replace(new RegExp(`{{${key}}}`, 'g'), val);
   }
+
   return result;
 }
 
-// Препроцессинг MD — вставляем HTML-компоненты
 function preprocess(
   text: string,
   webview: vscode.Webview,
   docUri: vscode.Uri
 ): string {
-  return text.replace(/:(\w+)\{([\s\S]*?)\}/g, (_m,name,inner) => {
-    const R = renderers[name];
-    if (!R) return _m;
-    const attrs: Record<string,string> = {};
-    for (const [,key,v1,v2] of inner.matchAll(/(\w+)=(?:"([^"]*)"|'([^']*)')/g)) {
+  return text.replace(/:(\w+)\{([\s\S]*?)\}/g, (_m, name, inner) => {
+    const renderer = renderers[name];
+    if (!renderer) return _m;
+    const attrs: Record<string, string> = {};
+    for (const [, key, v1, v2] of inner.matchAll(/(\w+)=(?:"([^"]*)"|'([^']*)')/g)) {
       attrs[key] = v1 ?? v2 ?? '';
     }
-    return R(attrs, webview, docUri);
+    return renderer(attrs, webview, docUri);
   });
 }
 
-// Собираем финальную страницу
 function renderWithComponents(
   md: string,
   webview: vscode.Webview,
@@ -147,8 +140,8 @@ function renderWithComponents(
   context: vscode.ExtensionContext
 ): string {
   const processed = preprocess(md, webview, docUri);
-  const body      = new MarkdownIt({ html: true }).render(processed);
-  const styles    = fs.readFileSync(
+  const body = new MarkdownIt({ html: true }).render(processed);
+  const styles = fs.readFileSync(
     path.join(context.extensionPath, 'media', 'styles.css'),
     'utf8'
   );
@@ -157,4 +150,4 @@ function renderWithComponents(
     .replace('{{content}}', body);
 }
 
-export function deactivate() {}
+export function deactivate() { }
