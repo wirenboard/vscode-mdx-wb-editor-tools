@@ -72,11 +72,15 @@ type ComponentRenderer = (
   documentUri: vscode.Uri
 ) => string;
 
+function resolveRelativePath(webview: vscode.Webview, documentUri: vscode.Uri, relativePath: string): string {
+  return relativePath
+    ? webview.asWebviewUri(vscode.Uri.joinPath(documentUri, '..', relativePath)).toString()
+    : '';
+}
+
 const componentRenderers: Record<string, ComponentRenderer> = {
   photo: (attributes, webview, documentUri) => {
-    const imageSource = attributes.src
-      ? webview.asWebviewUri(vscode.Uri.joinPath(documentUri, '..', attributes.src)).toString()
-      : '';
+    const imageSource = resolveRelativePath(webview, documentUri, attributes.src);
     return renderTemplate(photoTemplate, {
       src: imageSource,
       alt: attributes.alt || '',
@@ -88,7 +92,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
   gallery: (attributes, webview, documentUri) => {
     const rawImages = JSON.parse(attributes.data || '[]');
     const images = rawImages.map((image: any) => ({
-      src: image[0] ? webview.asWebviewUri(vscode.Uri.joinPath(documentUri, '..', image[0])).toString() : '',
+      src: resolveRelativePath(webview, documentUri, image[0]),
       alt: image[1] || '',
       caption: image[1] || ''
     }));
