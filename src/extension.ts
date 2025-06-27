@@ -4,6 +4,12 @@ import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import * as Handlebars from 'handlebars';
 
+const md = new MarkdownIt({ html: true });
+Handlebars.registerHelper('md', (text: string) => {
+  const html = md.render(text);
+  return new Handlebars.SafeString(html);
+});
+
 let previewPanel: vscode.WebviewPanel | undefined;
 let previewDocumentUri: vscode.Uri | undefined;
 
@@ -26,6 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
   Handlebars.registerHelper('isTitle', (key) => key === 'title');
   Handlebars.registerHelper('isImage', (key) => ['cover', 'logo'].includes(String(key)));
   Handlebars.registerHelper('isCover', (key) => key === 'cover');
+
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
       if (previewPanel && previewDocumentUri?.toString() === document.uri.toString()) {
@@ -151,7 +158,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       title,
       cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
       items
-    });
+    }) + '\n\n'; //fixed render bug
   }
 };
 
@@ -230,15 +237,14 @@ function renderWithComponents(
   context: vscode.ExtensionContext
 ): string {
   const processedMarkdown = preprocessMarkdown(markdown, webview, documentUri);
-  const renderedBody = new MarkdownIt({ html: true }).render(processedMarkdown);
   const styles = fs.readFileSync(
     path.join(context.extensionPath, 'media', 'styles.css'),
     'utf8'
   );
-  
+
   return mainTemplate({
-    styles: styles,
-    content: new Handlebars.SafeString(renderedBody)
+    styles,
+    content: processedMarkdown
   });
 }
 
