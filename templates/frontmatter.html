@@ -1,0 +1,8 @@
+<table class="frontmatter-table">
+  {{#each items}}
+  <tr>
+    <th>{{@key}}</th>
+    <td>{{#if (isImage @key)}}<img src="{{this}}" alt="{{@key}}" class="frontmatter-cover">{{else}}{{this}}{{/if}}</td>
+  </tr>
+  {{/each}}
+</table>
