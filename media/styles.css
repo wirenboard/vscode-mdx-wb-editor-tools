@@ -1,175 +1,147 @@
-/* media/styles.css */
-
-/* Базовые стили */
-body {
-  padding: 1em;
-  font-family: sans-serif;
-  background-color: #f2f4f8;
-  color: #0a1f44;
+:root {
+  --gallery-gap: 12px;
+  --gallery-radius: 4px;
+  --gallery-caption-color: #555;
+  --thumbnail-bg: #f8f8f8;
+  --video-thumb-height: 120px;
 }
 
-/* Photo-компонент */
+/* === Float-классы === */
+.float-right {
+  float: right;
+  margin: 0 var(--gallery-gap) var(--gallery-gap) 0;
+}
+.float-left {
+  float: left;
+  margin: 0 0 var(--gallery-gap) var(--gallery-gap);
+}
+
+/* === Фото === */
 .mdx-photo {
-  margin: 1em;
+  margin: 1em 0;
+  border-radius: var(--gallery-radius);
+  overflow: hidden;
 }
 .mdx-photo img {
   display: block;
   width: 100%;
   height: auto;
 }
-.mdx-photo-caption {
-  text-align: center;
-  color: #0a1f44;
-  font-size: 0.9em;
-  margin-top: 0.5em;
-}
-/* Выравнивание */
-.float-left   { float: left; }
-.float-right  { float: right; }
-.float-center { display: block; margin: 1em auto; }
-
-/* Галерея */
-.mdx-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.5em;
-  margin: 1em 0;
-}
-.mdx-gallery-item {
-  margin: 0;
-}
-.mdx-gallery img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.mdx-gallery-caption {
-  text-align: center;
-  color: #0a1f44;
-  font-size: 0.9em;
-  margin-top: 0.3em;
-}
-
-/*Видео плеер*/
-
-.mdx-video-cover{
-  width: 100%; 
-  height: 100%; 
-  object-fit: cover;
-}
-.mdx-video-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2em;
-  background-color: #2e4d4d;
+.mdx-photo .mdx-photo-caption {
+  background: #fff;                  /* белый фон под подпись */
+  padding: 0.5em 0.25em;
+  font-size: 0.875em;
+  color: var(--gallery-caption-color);
   text-align: center;
 }
 
-.mdx-video-player {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  max-width: 100%;
-  margin-bottom: 1em;
-}
-
-.mdx-video-link {
-  display: inline-block;
-  position: relative;
-}
-
-.mdx-video-play-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px;
-  height: 64px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.mdx-video-play-icon span {
-  display: block;
-  width: 0;
-  height: 0;
-  border-left: 18px solid white;
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
-}
-
-/* Видео галерея */
+/* === Общие для всех галерей === */
+.mdx-gallery,
 .mdx-video-gallery {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Фиксировано 3 колонок */
-  gap: 0.5em;
+  gap: var(--gallery-gap);
   margin: 1em 0;
-  max-width: calc(3 * 150px + 4 * 0.5em); /* Ограничение ширины для 3 колонок */
-  width: 100%; /* Для адаптивности */
-  margin-left: auto;
-  margin-right: auto;
-}
-.mdx-video-gallery-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* убрали height и overflow */
-  width: 150px;
 }
 
-/* и только здесь размеры + фон */
-.mdx-video-gallery-placeholder {
-  flex: none;
-  width: 150px;
-  height: 100px;
-  background-color: #2e4d4d;
-  display: block;
-  margin-bottom: 0.3em; /* отступ для подписи */
+/* === Картинка-галерея (максимум 5 столбцов) === */
+.mdx-gallery {
+  grid-template-columns: repeat(5, 1fr);
 }
-
-/* картинка аналогично */
-.mdx-video-gallery img {
-  flex: none;
-  width: 150px;
-  height: 100px;
-  object-fit: cover;
-  display: block;
-  margin-bottom: 0.3em;
-}
-
-.mdx-video-gallery-caption {
+.mdx-gallery .mdx-gallery-item {
+  background: var(--thumbnail-bg);
+  border-radius: var(--gallery-radius);
+  overflow: hidden;
   text-align: center;
-  font-size: 0.9em;
-  color: #0a1f44;
+}
+.mdx-gallery .mdx-gallery-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
-.mdx-video-gallery-play-icon {
+/* === Видео-галерея (максимум 3 столбца) === */
+.mdx-video-gallery {
+  grid-template-columns: repeat(3, 1fr);
+}
+.mdx-video-gallery .mdx-video-gallery-item {
+  position: relative;
+  background: var(--thumbnail-bg);
+  border-radius: var(--gallery-radius);
+  overflow: hidden;
+  text-align: center;
+}
+.mdx-video-gallery .mdx-video-gallery-item img,
+.mdx-video-gallery .mdx-video-gallery-placeholder {
+  display: block;
+  width: 100%;
+  height: var(--video-thumb-height);
+  object-fit: cover;
+  background: var(--thumbnail-bg);
+}
+
+/* === Одиночный видео-плеер === */
+.mdx-video-player {
+  position: relative;
+  margin: 1em 0;
+  background: var(--thumbnail-bg);
+  border-radius: var(--gallery-radius);
+  overflow: hidden;
+}
+.mdx-video-player img,
+.mdx-video-player .mdx-video-placeholder {
+  display: block;
+  width: 100%;
+  height: var(--video-thumb-height);
+  object-fit: cover;
+  background: var(--thumbnail-bg);
+}
+
+/* === Play-icon: круг === */
+.mdx-video-player .mdx-video-play-icon,
+.mdx-video-gallery .mdx-video-gallery-play-icon {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 64px;
-  height: 64px;
-  background: rgba(0, 0, 0, 0.5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+}
+.mdx-video-player .mdx-video-play-icon {
+  width: 3em;
+  height: 3em;
+}
+.mdx-video-gallery .mdx-video-gallery-play-icon {
+  width: 2.5em;
+  height: 2.5em;
 }
 
-.mdx-video-gallery-play-icon span {
-  display: block;
+/* === Play-icon: треугольник === */
+.mdx-video-player .mdx-video-play-icon span {
   width: 0;
   height: 0;
-  border-left: 18px solid white;
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
+  border-left: 0.8em solid #fff;
+  border-top: 0.5em solid transparent;
+  border-bottom: 0.5em solid transparent;
+}
+.mdx-video-gallery .mdx-video-gallery-play-icon span {
+  width: 0;
+  height: 0;
+  border-left: 0.6em solid #fff;
+  border-top: 0.4em solid transparent;
+  border-bottom: 0.4em solid transparent;
+}
+
+/* === Подписи === */
+.mdx-gallery .mdx-gallery-caption,
+.mdx-video-gallery .mdx-video-gallery-caption,
+.mdx-video-player .mdx-video-player-caption {
+  background: #fff;
+  padding: 0.5em 0.25em;
+  font-size: 0.875em;
+  color: var(--gallery-caption-color);
+  text-align: center;
 }
