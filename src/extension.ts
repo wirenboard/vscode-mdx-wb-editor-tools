@@ -123,17 +123,18 @@ const componentRenderers: Record<string, ComponentRenderer> = {
   'video-gallery': (attrs, webview, docUri) => {
     try {
       const rawItems = JSON.parse(attrs.data || '[]') as Array<[string, string, string?]>;
-      const videos = rawItems.map(([url, caption, src]) => ({
-        url: String(url), // Обязательное поле: URL видео
+      const videos = rawItems.map(([url, caption, cover]) => ({
+        url: String(url),
         caption: caption ? String(caption) : '',
-        thumbnail: src ? resolveRelativePath(webview, docUri, String(src)) : undefined,
+        cover: cover ? resolveRelativePath(webview, docUri, String(cover)) : '',
+        coverIsSet: !!cover
       }));
       return videoGalleryTemplate({ videos });
     } catch (error) {
       console.error('Invalid video gallery data:', error);
-      return videoGalleryTemplate({ videos: [] }); // Фолбэк
+      return videoGalleryTemplate({ videos: [] });
     }
-  },
+  }
 };
 
 
