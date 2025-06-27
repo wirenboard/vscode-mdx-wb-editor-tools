@@ -52,6 +52,11 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(cmd);
 }
 
+function dedent(html: string): string {
+  // убирать любые ведущие пробелы в каждой строке
+  return html.replace(/^[ \t]+/gm, '');
+}
+
 function updatePreview(doc: vscode.TextDocument, context: vscode.ExtensionContext) {
   if (!previewPanel) return;
   previewPanel.webview.html = renderWithComponents(
@@ -92,29 +97,55 @@ const renderers: Record<string, ComponentRenderer> = {
   }
 };
 
-function renderTemplate(tpl: string, data: Record<string, any>): string {
-  let result = tpl;
+function renderTemplate(
+  tpl: string,
+  data: Record<string, any>
+): string {
+  let output = tpl;
 
-  result = result.replace(/{{#each (\w+)}}([\s\S]*?){{\/each}}/g, (_, key, content) => {
-    const items = data[key] || [];
-    return items.map((item: any) => {
-      let html = content;
-      for (const [k, v] of Object.entries(item)) {
-        html = html.replace(new RegExp(`{{${k}}}`, 'g'), v);
-      }
-      return html;
-    }).join('');
+  // 1. Обработка всех блоков {{#each key}}…{{/each}}
+  const eachRe = /{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g;
+  output = output.replace(eachRe, (_match, key: string, block: string) => {
+    const arr = Array.isArray(data[key]) ? data[key] as any[] : [];
+    return arr
+      .map(item => {
+        // контекст для подстановки: элемент плюс корневые данные
+        const ctx: Record<string, any> = { ...data, ...item };
+
+        // 1.1. локальные if внутри блока
+        let part = block.replace(
+          /{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g,
+          (_m2, prop: string, inner: string) =>
+            ctx[prop] ? inner : ''
+        );
+
+        // 1.2. подстановка всех {{var}}
+        part = part.replace(
+          /{{(\w+)}}/g,
+          (_m3, varName: string) =>
+            ctx[varName] != null ? String(ctx[varName]) : ''
+        );
+
+        return part;
+      })
+      .join('');
   });
 
-  result = result.replace(/{{#if (\w+)}}([\s\S]*?){{\/if}}/g, (_, key, content) =>
-    data[key] ? content : ''
+  // 2. Глобальные условные блоки {{#if key}}…{{/if}} для data.key
+  output = output.replace(
+    /{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g,
+    (_match, key: string, inner: string) =>
+      data[key] ? inner : ''
   );
 
-  for (const [key, val] of Object.entries(data)) {
-    result = result.replace(new RegExp(`{{${key}}}`, 'g'), val);
-  }
+  // 3. Обычная подстановка {{var}} из корневого data
+  output = output.replace(
+    /{{(\w+)}}/g,
+    (_m, varName: string) =>
+      data[varName] != null ? String(data[varName]) : ''
+  );
 
-  return result;
+  return dedent(output).trim();
 }
 
 function preprocess(
