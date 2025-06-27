@@ -6,7 +6,7 @@
 
 Пока умеет только photo и gallery.
 
-![изображение](https://github.com/user-attachments/assets/bc5cffd8-dc22-40b6-891e-f39f08f279f3)
+![изображение](./asset/preview.png)
 
 
 ## Сборка
