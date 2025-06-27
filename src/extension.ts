@@ -11,7 +11,8 @@ let mainTemplate: HandlebarsTemplateDelegate;
 let photoTemplate: HandlebarsTemplateDelegate;
 let galleryTemplate: HandlebarsTemplateDelegate;
 let videoPlayerTemplate: HandlebarsTemplateDelegate;
-let videoGalleryTemplate: HandlebarsTemplateDelegate
+let videoGalleryTemplate: HandlebarsTemplateDelegate;
+let frontmatterTemplate: HandlebarsTemplateDelegate;
 
 export function activate(context: vscode.ExtensionContext) {
   const templatesDir = path.join(context.extensionPath, 'templates');
@@ -20,7 +21,11 @@ export function activate(context: vscode.ExtensionContext) {
   galleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'gallery.html'), 'utf8'));
   videoPlayerTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-player.html'), 'utf8'));
   videoGalleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-gallery.html'), 'utf8'));
+  frontmatterTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'frontmatter.html'), 'utf8'));
 
+  Handlebars.registerHelper('isTitle', (key) => key === 'title');
+  Handlebars.registerHelper('isImage', (key) => ['cover', 'logo'].includes(String(key)));
+  Handlebars.registerHelper('isCover', (key) => key === 'cover');
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
       if (previewPanel && previewDocumentUri?.toString() === document.uri.toString()) {
@@ -73,15 +78,6 @@ type ComponentRenderer = (
   documentUri: vscode.Uri
 ) => string;
 
-/**
- * Преобразует относительный путь в абсолютный URI для использования в WebView.
- * Если передан пустой путь, возвращает пустую строку.
- *
- * @param webview - Экземпляр WebView, для которого генерируется URI
- * @param documentUri - URI документа, относительно которого вычисляется путь
- * @param relativePath - Относительный путь к ресурсу
- * @returns Строковое представление URI ресурса или пустая строка
- */
 function resolveRelativePath(webview: vscode.Webview, documentUri: vscode.Uri, relativePath: string): string {
   return relativePath
     ? webview.asWebviewUri(vscode.Uri.joinPath(documentUri, '..', relativePath)).toString()
@@ -135,9 +131,29 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       console.error('Invalid video gallery data:', error);
       return videoGalleryTemplate({ videos: [] });
     }
+  },
+
+  frontmatter: (attrs, webview, docUri) => {
+    const items: Record<string, string> = {};
+    let title = '';
+
+    for (const [key, value] of Object.entries(attrs)) {
+      if (key === 'title') {
+        title = value;
+      } else {
+        items[key] = ['cover', 'logo'].includes(key)
+          ? resolveRelativePath(webview, docUri, value)
+          : value;
+      }
+    }
+
+    return frontmatterTemplate({
+      title,
+      cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
+      items
+    });
   }
 };
-
 
 function normalizeSize(value: string | undefined, fallback: string): string {
   if (!value) return fallback;
@@ -145,22 +161,66 @@ function normalizeSize(value: string | undefined, fallback: string): string {
   return /\d$/.test(trimmed) ? `${trimmed}px` : trimmed;
 }
 
+function parseFrontmatter(text: string): { content: string; attributes: Record<string, string> } | null {
+  const frontmatterMatch = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+  if (!frontmatterMatch) return null;
+
+  const attributes: Record<string, string> = {};
+  const frontmatterContent = frontmatterMatch[1];
+
+  for (const line of frontmatterContent.split('\n')) {
+    const match = line.match(/^(\w+):\s*(.*)/);
+    if (match) {
+      const [, key, value] = match;
+      attributes[key] = value.replace(/^['"](.*)['"]$/, '$1').trim();
+    }
+  }
+
+  return {
+    content: text.slice(frontmatterMatch[0].length),
+    attributes
+  };
+}
+
+function parseComponentAttributes(inner: string): Record<string, string> {
+  const attributes: Record<string, string> = {};
+  for (const match of inner.matchAll(/(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g)) {
+    const [, key, doubleQuoted, singleQuoted, unquoted] = match;
+    attributes[key] = (doubleQuoted ?? singleQuoted ?? unquoted).trim();
+  }
+  return attributes;
+}
+
+function processComponents(text: string, webview: vscode.Webview, documentUri: vscode.Uri): string {
+  return text.replace(/:([\w-]+)\{([\s\S]*?)\}/g, (match, componentName, inner) => {
+    const renderer = componentRenderers[componentName];
+    if (!renderer) return match;
+
+    const attributes = parseComponentAttributes(inner);
+    return renderer(attributes, webview, documentUri);
+  });
+}
+
 function preprocessMarkdown(
   text: string,
   webview: vscode.Webview,
   documentUri: vscode.Uri
 ): string {
-  return text.replace(/:([\w-]+)\{([\s\S]*?)\}/g, (_match, componentName, inner) => {
-    const renderer = componentRenderers[componentName];
-    if (!renderer) return _match;
+  const frontmatterData = parseFrontmatter(text);
+  const processedText = frontmatterData?.content || text;
 
-    const attributes: Record<string, string> = {};
-    for (const match of inner.matchAll(/(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g)) {
-      const [, key, doubleQuoted, singleQuoted, unquoted] = match;
-      attributes[key] = (doubleQuoted ?? singleQuoted ?? unquoted).trim();
-    }
-    return renderer(attributes, webview, documentUri);
-  });
+  let frontmatterHtml = '';
+  if (frontmatterData && componentRenderers.frontmatter) {
+    frontmatterHtml = componentRenderers.frontmatter(
+      frontmatterData.attributes, 
+      webview, 
+      documentUri
+    );
+  }
+
+  const withComponents = processComponents(processedText, webview, documentUri);
+
+  return frontmatterHtml + withComponents;
 }
 
 function renderWithComponents(
@@ -176,10 +236,9 @@ function renderWithComponents(
     'utf8'
   );
   
-  // Используем тройные фигурные скобки в шаблоне для raw HTML
   return mainTemplate({
     styles: styles,
-    content: new Handlebars.SafeString(renderedBody) // Помечаем как безопасный HTML
+    content: new Handlebars.SafeString(renderedBody)
   });
 }
 

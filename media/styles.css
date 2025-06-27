@@ -6,6 +6,25 @@
   --video-thumb-height: 120px;
 }
 
+.frontmatter-cover-container {
+  margin: 1em 0;
+  text-align: center;
+}
+
+.frontmatter-cover {
+  width: 150px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.frontmatter-table img.frontmatter-cover {
+  width: 150px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
 /* === Float-классы === */
 .float-right {
   float: right;
@@ -28,7 +47,7 @@
   height: auto;
 }
 .mdx-photo .mdx-photo-caption {
-  background: #fff;                  /* белый фон под подпись */
+  background: #fff;
   padding: 0.5em 0.25em;
   font-size: 0.875em;
   color: var(--gallery-caption-color);

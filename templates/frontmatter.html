@@ -1,0 +1,15 @@
+<table class="frontmatter-table">
+  {{#each items}}
+    <tr>
+      <th>{{@key}}</th>
+    <td>
+      {{#if (isCover @key)}}
+        <img src="{{this}}" alt="Cover image" class="frontmatter-cover">
+      {{else}}
+        {{this}}
+      {{/if}}
+    </td>
+  </tr>
+  {{/each}}
+</table>
+<h1>{{title}}</h1>
