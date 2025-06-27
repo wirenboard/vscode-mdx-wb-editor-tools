@@ -1,22 +1,31 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import MarkdownIt from 'markdown-it';
 import * as vscode from 'vscode';
+import MarkdownIt from 'markdown-it';
+import * as Handlebars from 'handlebars';
 
 let previewPanel: vscode.WebviewPanel | undefined;
 let previewDocumentUri: vscode.Uri | undefined;
 
-let mainTemplate: string;
-let photoTemplate: string;
-let galleryTemplate: string;
-let videoPlayerTemplate: string;
+let mainTemplate: HandlebarsTemplateDelegate;
+let photoTemplate: HandlebarsTemplateDelegate;
+let galleryTemplate: HandlebarsTemplateDelegate;
+let videoPlayerTemplate: HandlebarsTemplateDelegate;
 
 export function activate(context: vscode.ExtensionContext) {
+  Handlebars.registerHelper('resolvePath', (relativePath: string) => {
+    return resolveRelativePath(previewPanel?.webview!, previewDocumentUri!, relativePath);
+  });
+
+  Handlebars.registerHelper('styleIf', (condition: boolean, style: string) => {
+    return condition ? `style="${style}"` : '';
+  });
+
   const templatesDir = path.join(context.extensionPath, 'templates');
-  mainTemplate = fs.readFileSync(path.join(templatesDir, 'main.html'), 'utf8');
-  photoTemplate = fs.readFileSync(path.join(templatesDir, 'photo.html'), 'utf8');
-  galleryTemplate = fs.readFileSync(path.join(templatesDir, 'gallery.html'), 'utf8');
-  videoPlayerTemplate = fs.readFileSync(path.join(templatesDir, 'video-player.html'), 'utf8');
+  mainTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'main.html'), 'utf8'));
+  photoTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'photo.html'), 'utf8'));
+  galleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'gallery.html'), 'utf8'));
+  videoPlayerTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-player.html'), 'utf8'));
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
@@ -54,10 +63,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(previewCommand);
 }
 
-function dedent(html: string): string {
-  return html.replace(/^[ \t]+/gm, '');
-}
-
 function updatePreview(document: vscode.TextDocument, context: vscode.ExtensionContext) {
   if (!previewPanel) return;
   previewPanel.webview.html = renderWithComponents(
@@ -90,86 +95,43 @@ function resolveRelativePath(webview: vscode.Webview, documentUri: vscode.Uri, r
 }
 
 const componentRenderers: Record<string, ComponentRenderer> = {
-  photo: (attributes, webview, documentUri) => {
-    const imageSource = resolveRelativePath(webview, documentUri, attributes.src);
-    return renderTemplate(photoTemplate, {
-      src: imageSource,
-      alt: attributes.alt || '',
-      caption: attributes.caption,
-      style: attributes.width ? `style="width:${attributes.width}"` : '',
-      floatClass: attributes.float ? `float-${attributes.float}` : ''
+  photo: (attrs, webview, docUri) => {
+    return photoTemplate({
+      src: resolveRelativePath(webview, docUri, attrs.src),
+      alt: attrs.alt || '',
+      caption: attrs.caption,
+      width: attrs.width,
+      floatClass: attrs.float ? `float-${attrs.float}` : ''
     });
   },
-  gallery: (attributes, webview, documentUri) => {
-    const rawImages = JSON.parse(attributes.data || '[]');
-    const images = rawImages.map((image: any) => ({
-      src: resolveRelativePath(webview, documentUri, image[0]),
-      alt: image[1] || '',
-      caption: image[1] || ''
-    }));
-    return renderTemplate(galleryTemplate, { images });
-  },
-  'video-player': (attrs: Record<string, string>, webview: vscode.Webview, docUri: vscode.Uri) => {
-    const width = attrs.width || '500px';
-    const height = attrs.height || '280px';
-    const floatClass = attrs.float ? `float-${attrs.float}` : '';
 
-    return renderTemplate(videoPlayerTemplate, {
+  gallery: (attrs, webview, docUri) => {
+    const rawImages = JSON.parse(attrs.data || '[]');
+    const images = rawImages.map(([src, alt]: [string, string]) => ({
+      src: resolveRelativePath(webview, docUri, src),
+      alt: alt || '',
+      caption: alt
+    }));
+    return galleryTemplate({ images });
+  },
+
+  'video-player': (attrs, webview, docUri) => {
+    return videoPlayerTemplate({
       url: attrs.url,
-      width: width.includes('%') ? width : `${parseInt(width)}px`,
-      height: height.includes('%') ? height : `${parseInt(height)}px`,
-      floatClass,
-      cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : ''
+      width: normalizeSize(attrs.width, '500px'),
+      height: normalizeSize(attrs.height, '280px'),
+      floatClass: attrs.float ? `float-${attrs.float}` : '',
+      cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
+      coverIsSet: !!attrs.cover
     });
-  }  
+  }
 };
 
-function renderTemplate(
-  template: string,
-  data: Record<string, any>
-): string {
-  let output = template;
 
-  // Обработка блоков {{#each key}}…{{/each}}
-  const eachPattern = /{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g;
-  output = output.replace(eachPattern, (_match, key: string, block: string) => {
-    const items = Array.isArray(data[key]) ? data[key] as any[] : [];
-    return items
-      .map(item => {
-        const context = { ...data, ...item };
-
-        // Обработка if-else внутри each
-        let processedBlock = block.replace(
-          /{{#if\s+(\w+)}}([\s\S]*?)(?:{{else}}([\s\S]*?))?{{\/if}}/g,
-          (_ifMatch, property: string, ifBlock: string, elseBlock: string) =>
-            context[property] ? ifBlock : (elseBlock || '')
-        );
-
-        processedBlock = processedBlock.replace(
-          /{{(\w+)}}/g,
-          (_varMatch, variableName: string) =>
-            context[variableName] != null ? String(context[variableName]) : ''
-        );
-
-        return processedBlock;
-      })
-      .join('');
-  });
-
-  // Обработка if-else в основном шаблоне
-  output = output.replace(
-    /{{#if\s+(\w+)}}([\s\S]*?)(?:{{else}}([\s\S]*?))?{{\/if}}/g,
-    (_match, key: string, ifBlock: string, elseBlock: string) =>
-      data[key] ? ifBlock : (elseBlock || '')
-  );
-
-  output = output.replace(
-    /{{(\w+)}}/g,
-    (_match, variableName: string) =>
-      data[variableName] != null ? String(data[variableName]) : ''
-  );
-
-  return dedent(output).trim();
+function normalizeSize(value: string | undefined, fallback: string): string {
+  if (!value) return fallback;
+  const trimmed = value.trim();
+  return /\d$/.test(trimmed) ? `${trimmed}px` : trimmed;
 }
 
 function preprocessMarkdown(
@@ -181,11 +143,11 @@ function preprocessMarkdown(
     const renderer = componentRenderers[componentName];
     if (!renderer) return _match;
 
-    const attributes: Record<string, string> = {};    
-        for (const match of inner.matchAll(/(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g)) {
-            const [, key, doubleQuoted, singleQuoted, unquoted] = match;
-            attributes[key] = (doubleQuoted ?? singleQuoted ?? unquoted).trim();
-          }
+    const attributes: Record<string, string> = {};
+    for (const match of inner.matchAll(/(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g)) {
+      const [, key, doubleQuoted, singleQuoted, unquoted] = match;
+      attributes[key] = (doubleQuoted ?? singleQuoted ?? unquoted).trim();
+    }
     return renderer(attributes, webview, documentUri);
   });
 }
@@ -202,9 +164,12 @@ function renderWithComponents(
     path.join(context.extensionPath, 'media', 'styles.css'),
     'utf8'
   );
-  return mainTemplate
-    .replace('{{styles}}', styles)
-    .replace('{{content}}', renderedBody);
+  
+  // Используем тройные фигурные скобки в шаблоне для raw HTML
+  return mainTemplate({
+    styles: styles,
+    content: new Handlebars.SafeString(renderedBody) // Помечаем как безопасный HTML
+  });
 }
 
 export function deactivate() { }
