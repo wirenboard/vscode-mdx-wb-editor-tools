@@ -20,6 +20,7 @@ body {
 .mdx-photo-caption {
   text-align: center;
   color: #0a1f44;
+  font-size: 0.9em;
   margin-top: 0.5em;
 }
 /* Выравнивание */
@@ -34,7 +35,7 @@ body {
   gap: 0.5em;
   margin: 1em 0;
 }
-.mdx-gallery figure {
+.mdx-gallery-item {
   margin: 0;
 }
 .mdx-gallery img {
@@ -42,27 +43,9 @@ body {
   height: auto;
   display: block;
 }
-.mdx-gallery figcaption {
+.mdx-gallery-caption {
   text-align: center;
   color: #0a1f44;
-  font-size: 0.8em;
+  font-size: 0.9em;
   margin-top: 0.3em;
-}
-
-/* ------ Frontmatter table ------ */
-.mdx-frontmatter {
-  border-collapse: collapse;
-  margin-bottom: 1em;
-  width: 100%;
-}
-.mdx-frontmatter th,
-.mdx-frontmatter td {
-  border: 1px solid #ccc;
-  padding: 0.4em 0.6em;
-}
-.mdx-frontmatter th {
-  background-color: #f0f0f0;
-  text-align: left;
-  white-space: nowrap;
-  width: 1%;
 }
