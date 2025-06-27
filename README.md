@@ -4,7 +4,7 @@
 
 Основная идея — находить в тексте [компоненты](https://github.com/wirenboard/website/blob/main/doc/components.md) и рендерить их в html, по пути подтягивая файлы картинок.
 
-Пока умеет только photo, gallery и video-player.
+Пока умеет только photo, gallery, video-player и video-gallery.
 
 ![изображение](./assets/preview.png)
 
