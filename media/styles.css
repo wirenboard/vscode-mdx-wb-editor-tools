@@ -68,6 +68,10 @@ body {
 
 .mdx-video-player {
   position: relative;
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  margin-bottom: 1em;
 }
 
 .mdx-video-link {
