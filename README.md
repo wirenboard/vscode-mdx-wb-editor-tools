@@ -29,8 +29,8 @@ npm run package
 # Как пользоваться
 ## Установка или обновление расширения в VSCodium
 ```
-codium --install-extension ./mdx-preview-X.Y.Z.vsix --force
-vscode --install-extension ./mdx-preview-X.Y.Z.vsix --force
+codium --install-extension ./dist/mdx-preview-X.Y.Z.vsix --force
+vscode --install-extension ./dist/mdx-preview-X.Y.Z.vsix --force
 ```
 
 ## Запуск предпросмотра в редакторе (вручную)
