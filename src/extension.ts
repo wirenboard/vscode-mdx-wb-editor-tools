@@ -122,12 +122,13 @@ const componentRenderers: Record<string, ComponentRenderer> = {
 
   'video-gallery': (attrs, webview, docUri) => {
     try {
-      const rawItems = JSON.parse(attrs.data || '[]') as Array<[string, string, string?]>;
+      const rawItems = JSON.parse(attrs.data || '[]') as Array<[string, string?, string?]>;
       const videos = rawItems.map(([url, caption, cover]) => ({
         url: String(url),
-        caption: caption ? String(caption) : '',
+        caption: caption || '',
         cover: cover ? resolveRelativePath(webview, docUri, String(cover)) : '',
-        coverIsSet: !!cover
+        coverIsSet: !!cover,
+        hasCaption: !!caption
       }));
       return videoGalleryTemplate({ videos });
     } catch (error) {
