@@ -6,7 +6,7 @@
 
 Пока умеет только photo и gallery.
 
-![изображение](./asset/preview.png)
+![изображение](./assets/preview.png)
 
 
 ## Сборка
