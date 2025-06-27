@@ -9,12 +9,14 @@ let previewDocumentUri: vscode.Uri | undefined;
 let mainTemplate: string;
 let photoTemplate: string;
 let galleryTemplate: string;
+let videoPlayerTemplate: string;
 
 export function activate(context: vscode.ExtensionContext) {
   const templatesDir = path.join(context.extensionPath, 'templates');
   mainTemplate = fs.readFileSync(path.join(templatesDir, 'main.html'), 'utf8');
   photoTemplate = fs.readFileSync(path.join(templatesDir, 'photo.html'), 'utf8');
   galleryTemplate = fs.readFileSync(path.join(templatesDir, 'gallery.html'), 'utf8');
+  videoPlayerTemplate = fs.readFileSync(path.join(templatesDir, 'video-player.html'), 'utf8');
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
@@ -106,7 +108,20 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       caption: image[1] || ''
     }));
     return renderTemplate(galleryTemplate, { images });
-  }
+  },
+  'video-player': (attrs: Record<string, string>, webview: vscode.Webview, docUri: vscode.Uri) => {
+    const width = attrs.width || '500px';
+    const height = attrs.height || '280px';
+    const floatClass = attrs.float ? `float-${attrs.float}` : '';
+
+    return renderTemplate(videoPlayerTemplate, {
+      url: attrs.url,
+      width: width.includes('%') ? width : `${parseInt(width)}px`,
+      height: height.includes('%') ? height : `${parseInt(height)}px`,
+      floatClass,
+      cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : ''
+    });
+  }  
 };
 
 function renderTemplate(
@@ -123,10 +138,11 @@ function renderTemplate(
       .map(item => {
         const context = { ...data, ...item };
 
+        // Обработка if-else внутри each
         let processedBlock = block.replace(
-          /{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g,
-          (_ifMatch, property: string, innerBlock: string) =>
-            context[property] ? innerBlock : ''
+          /{{#if\s+(\w+)}}([\s\S]*?)(?:{{else}}([\s\S]*?))?{{\/if}}/g,
+          (_ifMatch, property: string, ifBlock: string, elseBlock: string) =>
+            context[property] ? ifBlock : (elseBlock || '')
         );
 
         processedBlock = processedBlock.replace(
@@ -140,10 +156,11 @@ function renderTemplate(
       .join('');
   });
 
+  // Обработка if-else в основном шаблоне
   output = output.replace(
-    /{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g,
-    (_match, key: string, inner: string) =>
-      data[key] ? inner : ''
+    /{{#if\s+(\w+)}}([\s\S]*?)(?:{{else}}([\s\S]*?))?{{\/if}}/g,
+    (_match, key: string, ifBlock: string, elseBlock: string) =>
+      data[key] ? ifBlock : (elseBlock || '')
   );
 
   output = output.replace(
@@ -160,13 +177,15 @@ function preprocessMarkdown(
   webview: vscode.Webview,
   documentUri: vscode.Uri
 ): string {
-  return text.replace(/:(\w+)\{([\s\S]*?)\}/g, (_match, componentName, inner) => {
+  return text.replace(/:([\w-]+)\{([\s\S]*?)\}/g, (_match, componentName, inner) => {
     const renderer = componentRenderers[componentName];
     if (!renderer) return _match;
-    const attributes: Record<string, string> = {};
-    for (const [, key, value1, value2] of inner.matchAll(/(\w+)=(?:"([^"]*)"|'([^']*)')/g)) {
-      attributes[key] = value1 ?? value2 ?? '';
-    }
+
+    const attributes: Record<string, string> = {};    
+        for (const match of inner.matchAll(/(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g)) {
+            const [, key, doubleQuoted, singleQuoted, unquoted] = match;
+            attributes[key] = (doubleQuoted ?? singleQuoted ?? unquoted).trim();
+          }
     return renderer(attributes, webview, documentUri);
   });
 }
