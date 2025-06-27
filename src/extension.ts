@@ -72,6 +72,15 @@ type ComponentRenderer = (
   documentUri: vscode.Uri
 ) => string;
 
+/**
+ * Преобразует относительный путь в абсолютный URI для использования в WebView.
+ * Если передан пустой путь, возвращает пустую строку.
+ *
+ * @param webview - Экземпляр WebView, для которого генерируется URI
+ * @param documentUri - URI документа, относительно которого вычисляется путь
+ * @param relativePath - Относительный путь к ресурсу
+ * @returns Строковое представление URI ресурса или пустая строка
+ */
 function resolveRelativePath(webview: vscode.Webview, documentUri: vscode.Uri, relativePath: string): string {
   return relativePath
     ? webview.asWebviewUri(vscode.Uri.joinPath(documentUri, '..', relativePath)).toString()
