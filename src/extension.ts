@@ -1,37 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import MarkdownIt from 'markdown-it';
-import * as Handlebars from 'handlebars';
+import { initializeTemplates, Templates } from './templateManager';
 import { initializeWebviewManager } from './webviewManager';
 
-const md = new MarkdownIt({ html: true });
-Handlebars.registerHelper('md', (text: string) => {
-  const html = md.render(text);
-  return new Handlebars.SafeString(html);
-});
-
-let mainTemplate: HandlebarsTemplateDelegate;
-let photoTemplate: HandlebarsTemplateDelegate;
-let galleryTemplate: HandlebarsTemplateDelegate;
-let videoPlayerTemplate: HandlebarsTemplateDelegate;
-let videoGalleryTemplate: HandlebarsTemplateDelegate;
-let frontmatterTemplate: HandlebarsTemplateDelegate;
-
+let templates: Templates;
 export function activate(context: vscode.ExtensionContext) {
-  const templatesDir = path.join(context.extensionPath, 'templates');
-  mainTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'main.html'), 'utf8'));
-  photoTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'photo.html'), 'utf8'));
-  galleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'gallery.html'), 'utf8'));
-  videoPlayerTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-player.html'), 'utf8'));
-  videoGalleryTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'video-gallery.html'), 'utf8'));
-  frontmatterTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'frontmatter.html'), 'utf8'));
-
-  Handlebars.registerHelper('isTitle', (key) => key === 'title');
-  Handlebars.registerHelper('isCover', (key) => ['cover', 'logo'].includes(String(key)));
-
+  templates = initializeTemplates(context);
   initializeWebviewManager(context);
-
 }
 
 type ComponentRenderer = (
@@ -68,7 +44,7 @@ function resolveRelativePath(
 
 const componentRenderers: Record<string, ComponentRenderer> = {
   photo: (attrs, webview, docUri) => {
-    return photoTemplate({
+    return templates.photo({
       src: resolveRelativePath(webview, docUri, attrs.src),
       alt: attrs.alt || '',
       caption: attrs.caption,
@@ -86,17 +62,17 @@ const componentRenderers: Record<string, ComponentRenderer> = {
         alt: alt || '',
         caption: alt
       }));
-      return galleryTemplate({ images, error: null });
+      return templates.gallery({ images, error: null });
     } catch (error) {
       console.error('Gallery component error:', error);
-      return galleryTemplate({
+      return templates.gallery({
         error: 'Invalid gallery data format'
       });
     }
   },
 
   'video-player': (attrs, webview, docUri) => {
-    return videoPlayerTemplate({
+    return templates.videoPlayer({
       url: attrs.url,
       width: normalizeSize(attrs.width, '500px'),
       height: normalizeSize(attrs.height, '280px'),
@@ -117,10 +93,10 @@ const componentRenderers: Record<string, ComponentRenderer> = {
         coverIsSet: !!cover,
         hasCaption: !!caption
       }));
-      return videoGalleryTemplate({ videos, error: null });
+      return templates.videoGallery({ videos, error: null });
     } catch (error) {
       console.error('Video gallery component error:', error);
-      return videoGalleryTemplate({
+      return templates.videoGallery({
         videos: [],
         error: 'Invalid video gallery format'
       });
@@ -141,7 +117,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       }
     }
 
-    return frontmatterTemplate({
+    return templates.frontmatter({
       title,
       cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
       items,
@@ -229,7 +205,7 @@ export function renderWithComponents(
     path.join(context.extensionPath, 'media', 'styles.css'),
     'utf8'
   );
-  return mainTemplate({
+  return templates.main({
     styles,
     content: processedMarkdown
   });
