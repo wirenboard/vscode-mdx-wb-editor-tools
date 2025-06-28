@@ -43,6 +43,12 @@
         "command": "mdx-preview.showPreview",
         "title": "Show MDX Preview"
       }
-    ]
+    ],
+    "snippets": [
+      {
+        "language": "markdown",
+        "path": "./snippets/markdown.json"
+      }
+    ]    
   }
 }
