@@ -1,13 +1,87 @@
 # vscode-mdx-preview-wb-style
+
 ## Описание
 Кастомный рендер md-файлов из репозитория https://github.com/wirenboard/website
 
+### Компоненты
 Основная идея — находить в тексте [компоненты](https://github.com/wirenboard/website/blob/main/doc/components.md) и рендерить их в html, по пути подтягивая файлы картинок.
 
-Пока умеет только photo, gallery, video-player и video-gallery.
+Пока умеет только:
+- `photo`
+- `gallery`
+- `video-player`
+- `video-gallery`
 
 ![изображение](./assets/preview.png)
 
+### Доступные сниппеты для Markdown
+
+#### Заголовки
+- `wb-h2` → `## Заголовок 2`  
+- `wb-h3` → `### Заголовок 3`  
+
+#### Списки
+- `wb-list-ul` →  
+  ```markdown
+  - Пункт 1
+  - Пункт 2
+  - Пункт 3
+  ```
+- `wb-list-ol` →  
+  ```markdown
+  1. Пункт 1
+  2. Пункт 2
+  3. Пункт 3
+  ```
+
+#### Ссылки
+- `wb-link` → `[текст ссылки](https://example.com)`
+
+#### Медиа-компоненты
+- `wb-comp-photo` →  
+  ```markdown
+  :photo{
+    src="путь/к/изображению.jpg"
+    alt="Описание"
+    caption="Подпись"
+    width="500px"
+    float="left|right"
+  }
+  ```
+- `wb-comp-gallery` →  
+  ```markdown
+  :gallery{
+    data='[
+      ["img1.jpg", "Описание 1"],
+      ["img2.jpg", "Описание 2"]
+    ]'
+  }
+  ```
+- `wb-comp-video` →  
+  ```markdown
+  :video-player{
+    url="https://youtube.com/..."
+    cover="превью.jpg"
+    width="600px"
+  }
+  ```
+- `wb-comp-video-gallery` →  
+  ```markdown
+  :video-gallery{
+    data='[
+      ["url1", "Описание 1", "cover1.jpg"],
+      ["url2", "Описание 2", "cover2.jpg"]
+    ]'
+  }
+  ```
+
+#### Шаблоны документов
+- `wb-md-article` → Шаблон статьи с frontmatter  
+- `wb-md-solution` → Шаблон решения для клиента  
+- `wb-md-integrator` → Шаблон карточки интегратора  
+- `wb-md-vacancy` → Шаблон вакансии  
+
+Для использования: введите префикс (например `wb-h2`) и нажмите `Tab`.
 
 ## Сборка
 ### Установка зависимостей (однократно)
@@ -15,33 +89,30 @@
 sudo npm install -g vsce
 ```
 
+### Локальная установка
 В каталоге проекта:
 ```
 npm install
 ```
 
-### Компиляция TypeScript и упаковка в .vsix
+### Компиляция и упаковка
 ```
 npm run package
 ```
 Собранный плагин будет в папке `dist`.
 
-# Как пользоваться
-## Установка или обновление расширения в VSCodium
+## Использование
+### Установка/обновление
 ```
 codium --install-extension ./dist/mdx-preview-X.Y.Z.vsix --force
 vscode --install-extension ./dist/mdx-preview-X.Y.Z.vsix --force
 ```
 
-## Запуск предпросмотра в редакторе (вручную)
-
+### Запуск предпросмотра
 Ctrl+Shift+P → Mdx Preview: Show Preview
 
-## Добавления своего рендера
-
-### 1. Компонент в MDX  
-
-Пусть у вас в файле такой компонент:
+## Добавление кастомных рендеров
+### 1. MDX-компонент
 ```md
 :myComponent{
   data='[
@@ -51,40 +122,44 @@ Ctrl+Shift+P → Mdx Preview: Show Preview
 }
 ```
 
-### 2. Шаблон  
-Для отрисовки создадим шаблон `templates/myComponent.html`:
+### 2. HTML-шаблон (Handlebars)
+Создаем `templates/myComponent.html`:
 ```hbs
 <div class="mdx-my-component">
-{{#each items}}
-<article class="my-component-item">
-  <h3>{{name}}</h3>
-  <p>Value: {{value}}</p>
-</article>
-{{/each}}
+  {{#each items}}
+    <article class="my-component-item">
+      <h3>{{name}}</h3>
+      <p>Value: {{value}}</p>
+    </article>
+  {{/each}}
 </div>
 ```
 
-### 3. Реализация 
-Добавим парсер в `extension.ts`:
+### 3. Реализация рендерера
+Добавляем в `extension.ts`:
 ```ts
-import * as vscode from 'vscode';
-import myTpl from './templates/myComponent.html';
+// ... существующий код ...
 
-renderers.myComponent = (attrs, webview, docUri) => {
-  // 1. Парсим JSON в массив объектов с полями name и value
-  const raw = JSON.parse(attrs.data || '[]') as Array<{ name: string; value: number }>;
-  // 2. Подготавливаем контекст для шаблона
-  const items = raw.map(item => ({
-    name: item.name,
-    value: item.value
-  }));
-  // 3. Передаём в общий renderTemplate
-  return renderTemplate(myTpl, { items });
+// 1. Импорт шаблона
+const myComponentTemplate = Handlebars.compile(
+  fs.readFileSync(path.join(context.extensionPath, 'templates', 'myComponent.html'), 'utf8'
+);
+
+// 2. Регистрация рендерера
+componentRenderers.myComponent = (attrs, webview, docUri) => {
+  try {
+    const items = JSON.parse(attrs.data || '[]') as Array<{ name: string; value: number }>;
+    return myComponentTemplate({ items });
+  } catch (error) {
+    console.error('myComponent error:', error);
+    return `<div class="error">Invalid myComponent data</div>`;
+  }
 };
+
+// ... остальной код ...
 ```
 
-## 4. Стили
-Теперь стилизуем в `media/styles.css`:  
+### 4. Стилизация (без изменений)
 ```css
 .mdx-my-component {
   display: flex;
@@ -96,14 +171,4 @@ renderers.myComponent = (attrs, webview, docUri) => {
   padding: 0.5em;
   border-radius: 4px;
 }
-.my-component-item h3 {
-  margin: 0 0 0.5em;
-}
-```
-
-## Если есть картинки
-
-Если внутри компонента есть картинки, надо преобразовать пути:
-```ts
-const webviewUri = resolveRelativePath(webview, documentUri, relativePath)
 ```
