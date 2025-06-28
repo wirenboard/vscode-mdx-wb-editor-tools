@@ -113,6 +113,7 @@ Ctrl+Shift+P → Mdx Preview: Show Preview
 
 ## Добавление кастомных рендеров
 ### 1. MDX-компонент
+Допустим, есть компонент с данными:
 ```md
 :myComponent{
   data='[
@@ -132,43 +133,46 @@ Ctrl+Shift+P → Mdx Preview: Show Preview
       <p>Value: {{value}}</p>
     </article>
   {{/each}}
+  {{#if error}}<div class="error">{{error}}</div>{{/if}}
 </div>
 ```
 
 ### 3. Реализация рендерера
 Добавляем в `extension.ts`:
 ```ts
-// ... существующий код ...
+const componentRenderers: Record<string, ComponentRenderer> = {
+  // ... existing renderers ...
 
-// 1. Импорт шаблона
-const myComponentTemplate = Handlebars.compile(
-  fs.readFileSync(path.join(context.extensionPath, 'templates', 'myComponent.html'), 'utf8'
-);
-
-// 2. Регистрация рендерера
-componentRenderers.myComponent = (attrs, webview, docUri) => {
-  try {
-    const items = JSON.parse(attrs.data || '[]') as Array<{ name: string; value: number }>;
-    return myComponentTemplate({ items });
-  } catch (error) {
-    console.error('myComponent error:', error);
-    return `<div class="error">Invalid myComponent data</div>`;
+  myComponent: (attrs, webview, docUri, templates) => {
+    try {
+      const items = JSON.parse(attrs.data || '[]');
+      return templates.myComponent({ items, error: null });
+    } catch (error) {
+      return templates.myComponent({ 
+        items: [], 
+        error: 'Invalid JSON format' 
+      });
+    }
   }
 };
-
-// ... остальной код ...
 ```
 
 ### 4. Стилизация (без изменений)
 ```css
 .mdx-my-component {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f8f8;
 }
+
 .my-component-item {
-  border: 1px solid #ddd;
-  padding: 0.5em;
-  border-radius: 4px;
+  border-left: 3px solid #4CAF50;
+  padding: 0.5rem 1rem;
+}
+
+.mdx-my-component .error {
+  color: #f44336;
+  font-style: italic;
 }
 ```
