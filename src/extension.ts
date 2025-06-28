@@ -30,8 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   frontmatterTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'frontmatter.html'), 'utf8'));
 
   Handlebars.registerHelper('isTitle', (key) => key === 'title');
-  Handlebars.registerHelper('isImage', (key) => ['cover', 'logo'].includes(String(key)));
-  Handlebars.registerHelper('isCover', (key) => key === 'cover');
+  Handlebars.registerHelper('isCover', (key) => ['cover', 'logo'].includes(String(key)));  
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
