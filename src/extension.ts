@@ -119,8 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function updatePreview(document: vscode.TextDocument, context: vscode.ExtensionContext) {
   if (!previewPanel) return;
-
-  console.log('Updating preview for:', document.uri.toString());
+ 
   try {
     previewPanel.webview.html = renderWithComponents(
       document.getText(),
