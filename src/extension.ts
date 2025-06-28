@@ -55,25 +55,34 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showErrorMessage('Нет открытого MD-файла');
         return;
       }
-      previewDocumentUri = editor.document.uri;
-      previewPanel = vscode.window.createWebviewPanel(
-        'mdxPreview',
-        'MDX Preview',
-        vscode.ViewColumn.Beside,
-        {
-          enableScripts: true,
-          localResourceRoots: [
-            vscode.Uri.joinPath(previewDocumentUri, '..'),
-            vscode.Uri.file(path.join(context.extensionPath, 'media')),
-            vscode.Uri.file(path.join(context.extensionPath, 'templates'))
-          ]
-        }
-      );
-      previewPanel.onDidDispose(() => {
-        previewPanel = undefined;
-        previewDocumentUri = undefined;
-      }, null, context.subscriptions);
-      updatePreview(editor.document, context);
+            const doc = editor.document;
+            previewDocumentUri = doc.uri;
+            if (previewPanel) {
+              // обновляем заголовок и показываем существующую панель
+              previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
+              previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ false);
+            } else {
+              // создаём новую панель и слушаем её закрытие
+              previewPanel = vscode.window.createWebviewPanel(
+                'mdxPreview',
+                `Preview: ${path.basename(doc.fileName)}`,
+                vscode.ViewColumn.Beside,
+                {
+                  enableScripts: true,
+                  localResourceRoots: [
+                    vscode.Uri.joinPath(doc.uri, '..'),
+                    vscode.Uri.file(path.join(context.extensionPath, 'media')),
+                    vscode.Uri.file(path.join(context.extensionPath, 'templates'))
+                  ]
+                }
+              );
+              previewPanel.onDidDispose(() => {
+                previewPanel = undefined;
+                previewDocumentUri = undefined;
+              });
+            }
+            // сразу рендерим содержимое выбранного файла
+            updatePreview(doc, context);
     }
   );
   context.subscriptions.push(previewCommand);
