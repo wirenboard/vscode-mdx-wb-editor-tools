@@ -35,8 +35,15 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
-      if (previewPanel && previewDocumentUri?.toString() === document.uri.toString()) {
-        updatePreview(document, context);
+      const stylePath = path.join(context.extensionPath, 'media', 'styles.css');
+      const isStyleChange = document.uri.fsPath === stylePath;
+      if (previewPanel && (isStyleChange || previewDocumentUri?.toString() === document.uri.toString())) {
+        updatePreview(
+          isStyleChange
+            ? vscode.workspace.textDocuments.find(d => d.uri.toString() === previewDocumentUri?.toString())!
+            : document,
+          context
+        );
       }
     })
   );
@@ -63,20 +70,45 @@ export function activate(context: vscode.ExtensionContext) {
           ]
         }
       );
+      previewPanel.onDidDispose(() => {
+        previewPanel = undefined;
+        previewDocumentUri = undefined;
+      }, null, context.subscriptions);      
       updatePreview(editor.document, context);
     }
   );
   context.subscriptions.push(previewCommand);
+
+  const cssWatcher = vscode.workspace.createFileSystemWatcher(
+    new vscode.RelativePattern(
+      path.join(context.extensionPath, 'media'),
+      'styles.css'
+    )
+  );
+  cssWatcher.onDidChange(() => {
+    if (previewPanel && previewDocumentUri) {
+      vscode.workspace
+        .openTextDocument(previewDocumentUri)
+        .then(doc => updatePreview(doc, context));
+    }
+  });
+  context.subscriptions.push(cssWatcher);  
 }
 
 function updatePreview(document: vscode.TextDocument, context: vscode.ExtensionContext) {
   if (!previewPanel) return;
-  previewPanel.webview.html = renderWithComponents(
-    document.getText(),
-    previewPanel.webview,
-    document.uri,
-    context
-  );
+
+  console.log('Updating preview for:', document.uri.toString());
+  try {
+    previewPanel.webview.html = renderWithComponents(
+      document.getText(),
+      previewPanel.webview,
+      document.uri,
+      context
+    );
+  } catch (error) {
+    console.error('Preview update error:', error);
+  }
 }
 
 type ComponentRenderer = (
@@ -158,7 +190,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       title,
       cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
       items
-    }) + '\n\n'; //fixed render bug
+    }) + '\n\n';
   }
 };
 
@@ -219,8 +251,8 @@ function preprocessMarkdown(
   let frontmatterHtml = '';
   if (frontmatterData && componentRenderers.frontmatter) {
     frontmatterHtml = componentRenderers.frontmatter(
-      frontmatterData.attributes, 
-      webview, 
+      frontmatterData.attributes,
+      webview,
       documentUri
     );
   }
@@ -241,7 +273,6 @@ function renderWithComponents(
     path.join(context.extensionPath, 'media', 'styles.css'),
     'utf8'
   );
-
   return mainTemplate({
     styles,
     content: processedMarkdown
