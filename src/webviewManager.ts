@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { renderWithComponents } from './extension';
+import { renderWithComponents } from './renderer';
 
 let previewPanel: vscode.WebviewPanel | undefined;
 let previewDocumentUri: vscode.Uri | undefined;
+
 
 export function initializeWebviewManager(context: vscode.ExtensionContext) {
   setupWebviewListeners(context);
@@ -59,6 +60,7 @@ function setupWebviewListeners(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(cssWatcher);
 }
+
 export function createPreviewPanel(document: vscode.TextDocument, context: vscode.ExtensionContext) {
   const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   previewPanel = vscode.window.createWebviewPanel(
