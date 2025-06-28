@@ -137,10 +137,23 @@ Ctrl+Shift+P → Mdx Preview: Show Preview
 </div>
 ```
 
-### 3. Реализация рендерера
-Добавляем в `extension.ts`:
+### 3. Регистрация шаблона
+Добавить в `templateManager.ts`:
 ```ts
-const componentRenderers: Record<string, ComponentRenderer> = {
+  private readonly templates: {
+    // ... existing templates ...
+    myComponent: Handlebars.myComponent;
+  };
+
+    this.templates = {
+      // ... existing templates ...
+      myComponent: this.compileTemplate(path.join(templatesDir, 'myComponent.html'))
+    };
+```
+### 4. Реализация рендерера
+Добавляем в `renderers.ts`:
+```ts
+private componentRenderers: Record<string, ComponentRenderer> = {
   // ... existing renderers ...
 
   myComponent: (attrs, webview, docUri, templates) => {
@@ -157,7 +170,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
 };
 ```
 
-### 4. Стилизация
+### 5. Стилизация
 ```css
 .mdx-my-component {
   display: grid;
@@ -176,3 +189,12 @@ const componentRenderers: Record<string, ComponentRenderer> = {
   font-style: italic;
 }
 ```
+
+### Пути к картинкам
+
+Если надо отрисовать картинки, то путь к ним надо подготовить:
+
+```ts
+  src: this.resolveRelativePath(webview, docUri, src),
+```
+src — путь к картинке в md-файле.
