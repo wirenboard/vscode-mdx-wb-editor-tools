@@ -3,15 +3,13 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import MarkdownIt from 'markdown-it';
 import * as Handlebars from 'handlebars';
+import { initializeWebviewManager } from './webviewManager';
 
 const md = new MarkdownIt({ html: true });
 Handlebars.registerHelper('md', (text: string) => {
   const html = md.render(text);
   return new Handlebars.SafeString(html);
 });
-
-let previewPanel: vscode.WebviewPanel | undefined;
-let previewDocumentUri: vscode.Uri | undefined;
 
 let mainTemplate: HandlebarsTemplateDelegate;
 let photoTemplate: HandlebarsTemplateDelegate;
@@ -32,104 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
   Handlebars.registerHelper('isTitle', (key) => key === 'title');
   Handlebars.registerHelper('isCover', (key) => ['cover', 'logo'].includes(String(key)));
 
-  context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument((document) => {
-      const stylePath = path.join(context.extensionPath, 'media', 'styles.css');
-      const isStyleChange = document.uri.fsPath === stylePath;
-      if (previewPanel && (isStyleChange || previewDocumentUri?.toString() === document.uri.toString())) {
-        updatePreview(
-          isStyleChange
-            ? vscode.workspace.textDocuments.find(d => d.uri.toString() === previewDocumentUri?.toString())!
-            : document,
-          context
-        );
-      }
-    })
-  );
+  initializeWebviewManager(context);
 
-  const previewCommand = vscode.commands.registerCommand(
-    'mdx-preview.showPreview',
-    () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showErrorMessage('Нет открытого MD-файла');
-        return;
-      }
-      const doc = editor.document;
-      previewDocumentUri = doc.uri;
-      if (previewPanel) {
-        // обновляем заголовок и показываем существующую панель
-        previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
-        previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ false);
-      } else {
-        // создаём новую панель и слушаем её закрытие
-            const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            previewPanel = vscode.window.createWebviewPanel(
-              'mdxPreview',
-              `Preview: ${path.basename(doc.fileName)}`,
-              { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
-              {
-                enableScripts: true,
-                localResourceRoots: [
-                  vscode.Uri.file(path.join(ws ?? '', 'public')),
-                  vscode.Uri.file(path.join(ws ?? '', 'content'))
-                ]
-              }
-            );
-        previewPanel.onDidDispose(() => {
-          previewPanel = undefined;
-          previewDocumentUri = undefined;
-        });
-      }
-      // сразу рендерим содержимое выбранного файла
-      updatePreview(doc, context);
-    }
-  );
-  context.subscriptions.push(previewCommand);
-
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-      if (editor && previewPanel) {
-        const doc = editor.document;
-        previewDocumentUri = doc.uri;
-        // обновляем заголовок и показываем панель
-        previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
-        previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ true);
-        // рендерим новый документ
-        updatePreview(doc, context);
-      }
-    })
-  );
-
-  const cssWatcher = vscode.workspace.createFileSystemWatcher(
-    new vscode.RelativePattern(
-      path.join(context.extensionPath, 'media'),
-      'styles.css'
-    )
-  );
-  cssWatcher.onDidChange(() => {
-    if (previewPanel && previewDocumentUri) {
-      vscode.workspace
-        .openTextDocument(previewDocumentUri)
-        .then(doc => updatePreview(doc, context));
-    }
-  });
-  context.subscriptions.push(cssWatcher);
-}
-
-function updatePreview(document: vscode.TextDocument, context: vscode.ExtensionContext) {
-  if (!previewPanel) return;
- 
-  try {
-    previewPanel.webview.html = renderWithComponents(
-      document.getText(),
-      previewPanel.webview,
-      document.uri,
-      context
-    );
-  } catch (error) {
-    console.error('Preview update error:', error);
-  }
 }
 
 type ComponentRenderer = (
@@ -145,22 +47,18 @@ function resolveRelativePath(
 ): string {
   if (!relativePath) return '';
 
-  // 1. special /img or img/
   if (/^\/?img\//.test(relativePath)) {
-    // убираем ведущие слеши и префикс
     const assetPath = relativePath.replace(/^\/?img\//, '');
     const wf = vscode.workspace.workspaceFolders?.[0];
     if (!wf) {
       console.error('No workspace folder to resolve /img path');
       return '';
     }
-    // строим абсолютный FS-путь: <workspaceRoot>/public/img/<assetPath>
     const absFs = path.join(wf.uri.fsPath, 'public', 'img', assetPath);
     const fileUri = vscode.Uri.file(absFs);
     return webview.asWebviewUri(fileUri).toString();
   }
 
-  // 2. обычный относительный путь от папки с md-файлом
   const docFs = documentUri.fsPath;
   const docDir = path.dirname(docFs);
   const absFs = path.join(docDir, relativePath);
@@ -320,7 +218,7 @@ function preprocessMarkdown(
   return frontmatterHtml + withComponents;
 }
 
-function renderWithComponents(
+export function renderWithComponents(
   markdown: string,
   webview: vscode.Webview,
   documentUri: vscode.Uri,
