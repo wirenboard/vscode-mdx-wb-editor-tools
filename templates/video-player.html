@@ -1,10 +1,15 @@
 <div class="mdx-video-player {{floatClass}}" style="width: {{width}}; height: {{height}}">
-  <a href="{{url}}" target="_blank" class="mdx-video-link">
-    {{#if coverIsSet}}
-      <img src="{{cover}}" class="mdx-video-cover" alt="Video cover">
-    {{else}}
-      <div class="mdx-video-placeholder" style="width: {{width}}; height: {{height}}"></div>
-    {{/if}}
-    <div class="mdx-video-play-icon"><span></span></div>
-  </a>
+  <div class="media-wrapper aspect-ratio-16-9">
+    <a href="{{url}}" target="_blank" class="mdx-video-link">
+      {{#if coverIsSet}}
+        <img src="{{cover}}" class="mdx-video-cover" alt="Video cover">
+      {{else}}
+        <div class="mdx-video-placeholder" style="width: {{width}}; height: {{height}}"></div>
+      {{/if}}
+      <div class="mdx-video-play-icon">
+        <span class="play-circle"></span>
+        <span class="play-triangle"></span>
+      </div>
+    </a>
+  </div>
 </div>

@@ -1,6 +1,6 @@
 :root {
   --grid-margin: 16px;
-  --border-color: #ccc;
+  --border-color: #d5d5d5;
   --border-radius: 8px;
   --item-color: #fff;
   --placeholder-bg: rgb(33, 94, 88);
@@ -8,12 +8,17 @@
 }
 
 /* === Ограничение ширины контента === */
+html{
+  zoom: 0.7;
+}
 body {
-  max-width: 1000px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 var(--grid-margin);
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: 18px;
+  background-color: white;
+  color: rgb(40, 39, 42);
 }
 
 /* === Утилиты для колонок === */
@@ -25,13 +30,13 @@ body {
 /* === Общая сетка для галерей === */
 .gallery-base,
 .mdx-gallery{
-  --min-item-width: 180px;
+  --min-item-width: 220px;
   --gap: 8px;
   display: grid;
   gap: var(--gap);
   grid-template-columns: repeat(auto-fit, minmax(var(--min-item-width), 1fr));
   margin: auto;
-  max-width: calc(5 * var(--min-item-width) + 4 * var(--gap));
+  max-width: calc(5 * var(--min-item-width) + 4 * var(--gap));  
 }
 
 .mdx-video-gallery {
@@ -48,9 +53,7 @@ body {
   font-size: .9em;
   font-style: italic;
   padding: 0 4px;
-  margin: 0 4px 0;
-  color: #000;
-  background: #fff;
+  margin: 0 4px 0;  
 }
 
 /* === Картинка во фронтматтере === */
@@ -68,7 +71,6 @@ body {
 .mdx-photo > img {
   display: block;
   width: 100%;
-  aspect-ratio: 16/9;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -85,8 +87,14 @@ body {
 }
 .mdx-gallery-item > img {
   display: block;
-  width: 100%;
-  aspect-ratio: 16/9;
+  width: 100%;  
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mdx-video-gallery-item > img {
+  display: block;
+  width: 100%;  
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -105,12 +113,19 @@ body {
 
 /* === Ваша структура: обёртка медиа === */
 .media-wrapper {
-  width: 100%;
-  aspect-ratio: 16/9;
+  width: 100%;  
   overflow: hidden;
   position: relative;
-  border: 1px solid var(--border-color);
+  /* border: 1px solid var(--border-color); */
   border-radius: var(--border-radius);
+}
+
+.aspect-ratio-4-3{
+  aspect-ratio: 4/3;
+}
+
+.aspect-ratio-16-9{
+  aspect-ratio: 16/9;
 }
 
 /* делаем ссылку на весь блок media-wrapper */
@@ -122,7 +137,7 @@ body {
 
 /* картинка или плейсхолдер внутри media-wrapper */
 .media-wrapper img,
-.media-wrapper .mdx-video-gallery-placeholder {
+.media-wrapper .mdx-video-placeholder {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -135,7 +150,7 @@ body {
 }
 
 /* иконка “play” внутри media-wrapper */
-.media-wrapper .mdx-video-gallery-play-icon {
+.media-wrapper .mdx-video-play-icon {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -145,7 +160,7 @@ body {
   z-index: 2;
 }
 
-.media-wrapper .mdx-video-gallery-play-icon .play-circle {
+.media-wrapper .mdx-video-play-icon .play-circle {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -156,7 +171,7 @@ body {
   z-index: 1;
 }
 
-.media-wrapper .mdx-video-gallery-play-icon .play-triangle {
+.media-wrapper .mdx-video-play-icon .play-triangle {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
