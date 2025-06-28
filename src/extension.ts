@@ -55,51 +55,51 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showErrorMessage('Нет открытого MD-файла');
         return;
       }
-            const doc = editor.document;
-            previewDocumentUri = doc.uri;
-            if (previewPanel) {
-              // обновляем заголовок и показываем существующую панель
-              previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
-              previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ false);
-            } else {
-              // создаём новую панель и слушаем её закрытие
-                  previewPanel = vscode.window.createWebviewPanel(
-                      'mdxPreview',
-                      `Preview: ${path.basename(doc.fileName)}`,
-                      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
-                {
-                  enableScripts: true,
-                  localResourceRoots: [
-                    vscode.Uri.joinPath(doc.uri, '..'),
-                    vscode.Uri.file(path.join(context.extensionPath, 'media')),
-                    vscode.Uri.file(path.join(context.extensionPath, 'templates'))
-                  ]
-                }
-              );
-              previewPanel.onDidDispose(() => {
-                previewPanel = undefined;
-                previewDocumentUri = undefined;
-              });
-            }
-            // сразу рендерим содержимое выбранного файла
-            updatePreview(doc, context);
+      const doc = editor.document;
+      previewDocumentUri = doc.uri;
+      if (previewPanel) {
+        // обновляем заголовок и показываем существующую панель
+        previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
+        previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ false);
+      } else {
+        // создаём новую панель и слушаем её закрытие
+            const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            previewPanel = vscode.window.createWebviewPanel(
+              'mdxPreview',
+              `Preview: ${path.basename(doc.fileName)}`,
+              { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+              {
+                enableScripts: true,
+                localResourceRoots: [
+                  vscode.Uri.file(path.join(ws ?? '', 'public')),
+                  vscode.Uri.file(path.join(ws ?? '', 'content'))
+                ]
+              }
+            );
+        previewPanel.onDidDispose(() => {
+          previewPanel = undefined;
+          previewDocumentUri = undefined;
+        });
+      }
+      // сразу рендерим содержимое выбранного файла
+      updatePreview(doc, context);
     }
   );
   context.subscriptions.push(previewCommand);
 
-    context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(editor => {
-          if (editor && previewPanel) {
-            const doc = editor.document;
-            previewDocumentUri = doc.uri;
-            // обновляем заголовок и показываем панель
-            previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
-            previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ true);
-            // рендерим новый документ
-            updatePreview(doc, context);
-          }
-        })
-      );  
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(editor => {
+      if (editor && previewPanel) {
+        const doc = editor.document;
+        previewDocumentUri = doc.uri;
+        // обновляем заголовок и показываем панель
+        previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
+        previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ true);
+        // рендерим новый документ
+        updatePreview(doc, context);
+      }
+    })
+  );
 
   const cssWatcher = vscode.workspace.createFileSystemWatcher(
     new vscode.RelativePattern(
@@ -119,8 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function updatePreview(document: vscode.TextDocument, context: vscode.ExtensionContext) {
   if (!previewPanel) return;
-
-  console.log('Updating preview for:', document.uri.toString());
+ 
   try {
     previewPanel.webview.html = renderWithComponents(
       document.getText(),
@@ -139,10 +138,34 @@ type ComponentRenderer = (
   documentUri: vscode.Uri
 ) => string;
 
-function resolveRelativePath(webview: vscode.Webview, documentUri: vscode.Uri, relativePath: string): string {
-  return relativePath
-    ? webview.asWebviewUri(vscode.Uri.joinPath(documentUri, '..', relativePath)).toString()
-    : '';
+function resolveRelativePath(
+  webview: vscode.Webview,
+  documentUri: vscode.Uri,
+  relativePath: string
+): string {
+  if (!relativePath) return '';
+
+  // 1. special /img or img/
+  if (/^\/?img\//.test(relativePath)) {
+    // убираем ведущие слеши и префикс
+    const assetPath = relativePath.replace(/^\/?img\//, '');
+    const wf = vscode.workspace.workspaceFolders?.[0];
+    if (!wf) {
+      console.error('No workspace folder to resolve /img path');
+      return '';
+    }
+    // строим абсолютный FS-путь: <workspaceRoot>/public/img/<assetPath>
+    const absFs = path.join(wf.uri.fsPath, 'public', 'img', assetPath);
+    const fileUri = vscode.Uri.file(absFs);
+    return webview.asWebviewUri(fileUri).toString();
+  }
+
+  // 2. обычный относительный путь от папки с md-файлом
+  const docFs = documentUri.fsPath;
+  const docDir = path.dirname(docFs);
+  const absFs = path.join(docDir, relativePath);
+  const fileUri = vscode.Uri.file(absFs);
+  return webview.asWebviewUri(fileUri).toString();
 }
 
 const componentRenderers: Record<string, ComponentRenderer> = {
