@@ -3,7 +3,7 @@
   "publisher": "wirenboard",
   "displayName": "MDX Preview",
   "description": "Preview MDX-style markdown with components for Wiren Board",
-  "version": "0.5.1",
+  "version": "0.6.1",
   "engines": {
     "vscode": "^1.85.0"
   },
