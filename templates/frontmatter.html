@@ -1,7 +1,14 @@
 <table class="frontmatter-table">
-    {{#each items}}
-      <tr>
+  <thead>
+    <tr>
+      {{#each items}}
         <th>{{@key}}</th>
+      {{/each}}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      {{#each items}}
         <td>
           {{#if (isCover @key)}}
             <img src="{{this}}" alt="Cover image" class="frontmatter-cover">
@@ -9,8 +16,9 @@
             {{this}}
           {{/if}}
         </td>
-      </tr>
-    {{/each}}
-  </table>
-  
-  <h1>{{title}}</h1>
+      {{/each}}
+    </tr>
+  </tbody>
+</table>
+
+<h1>{{title}}</h1>

@@ -1,8 +1,16 @@
-<div class="mdx-gallery">
+<div class="mdx-gallery gallery-base cols-5">
+  {{#if error}}
+  <div class="errors">
+    <p>{{error}}</p>
+  </div>
+  {{else}}
   {{#each images}}
   <div class="mdx-gallery-item">
-    <img src="{{src}}" alt="{{alt}}">
+    <div class="media-wrapper aspect-ratio-4-3">
+      <img src="{{src}}" alt="{{alt}}">
+    </div>
     {{#if caption}}<div class="mdx-gallery-caption">{{caption}}</div>{{/if}}
   </div>
   {{/each}}
+  {{/if}}
 </div>

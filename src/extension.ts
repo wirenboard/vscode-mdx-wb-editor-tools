@@ -30,8 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   frontmatterTemplate = Handlebars.compile(fs.readFileSync(path.join(templatesDir, 'frontmatter.html'), 'utf8'));
 
   Handlebars.registerHelper('isTitle', (key) => key === 'title');
-  Handlebars.registerHelper('isImage', (key) => ['cover', 'logo'].includes(String(key)));
-  Handlebars.registerHelper('isCover', (key) => key === 'cover');
+  Handlebars.registerHelper('isCover', (key) => ['cover', 'logo'].includes(String(key)));
 
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
@@ -73,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
       previewPanel.onDidDispose(() => {
         previewPanel = undefined;
         previewDocumentUri = undefined;
-      }, null, context.subscriptions);      
+      }, null, context.subscriptions);
       updatePreview(editor.document, context);
     }
   );
@@ -92,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
         .then(doc => updatePreview(doc, context));
     }
   });
-  context.subscriptions.push(cssWatcher);  
+  context.subscriptions.push(cssWatcher);
 }
 
 function updatePreview(document: vscode.TextDocument, context: vscode.ExtensionContext) {
@@ -130,18 +129,26 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       alt: attrs.alt || '',
       caption: attrs.caption,
       width: normalizeSize(attrs.width, '100%'),
-      floatClass: attrs.float ? `float-${attrs.float}` : ''
+      floatClass: attrs.float ? `float-${attrs.float}` : '',
+      error: null
     });
   },
 
   gallery: (attrs, webview, docUri) => {
-    const rawImages = JSON.parse(attrs.data || '[]');
-    const images = rawImages.map(([src, alt]: [string, string]) => ({
-      src: resolveRelativePath(webview, docUri, src),
-      alt: alt || '',
-      caption: alt
-    }));
-    return galleryTemplate({ images });
+    try {
+      const rawImages = JSON.parse(attrs.data || '[]');
+      const images = rawImages.map(([src, alt]: [string, string]) => ({
+        src: resolveRelativePath(webview, docUri, src),
+        alt: alt || '',
+        caption: alt
+      }));
+      return galleryTemplate({ images, error: null });
+    } catch (error) {
+      console.error('Gallery component error:', error);
+      return galleryTemplate({
+        error: 'Invalid gallery data format'
+      });
+    }
   },
 
   'video-player': (attrs, webview, docUri) => {
@@ -151,7 +158,8 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       height: normalizeSize(attrs.height, '280px'),
       floatClass: attrs.float ? `float-${attrs.float}` : '',
       cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
-      coverIsSet: !!attrs.cover
+      coverIsSet: !!attrs.cover,
+      error: null
     });
   },
 
@@ -165,10 +173,13 @@ const componentRenderers: Record<string, ComponentRenderer> = {
         coverIsSet: !!cover,
         hasCaption: !!caption
       }));
-      return videoGalleryTemplate({ videos });
+      return videoGalleryTemplate({ videos, error: null });
     } catch (error) {
-      console.error('Invalid video gallery data:', error);
-      return videoGalleryTemplate({ videos: [] });
+      console.error('Video gallery component error:', error);
+      return videoGalleryTemplate({
+        videos: [],
+        error: 'Invalid video gallery format'
+      });
     }
   },
 
@@ -189,7 +200,8 @@ const componentRenderers: Record<string, ComponentRenderer> = {
     return frontmatterTemplate({
       title,
       cover: attrs.cover ? resolveRelativePath(webview, docUri, attrs.cover) : '',
-      items
+      items,
+      error: null
     }) + '\n\n';
   }
 };

@@ -1,166 +1,226 @@
 :root {
-  --gallery-gap: 12px;
-  --gallery-radius: 4px;
-  --gallery-caption-color: #555;
-  --thumbnail-bg: #f8f8f8;
-  --video-thumb-height: 120px;
+  --grid-margin: 16px;
+  --border-color: #d5d5d5;
+  --border-radius: 8px;
+  --item-color: #fff;
+  --placeholder-bg: rgb(33, 94, 88);
+  --play-icon-size: 32px;
 }
 
-.frontmatter-cover-container {
-  margin: 1em 0;
-  text-align: center;
+/* === Базовые стили === */
+html{
+  zoom: 0.7;
+}
+body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--grid-margin);
+  box-sizing: border-box;
+  font-size: 18px;
+  background-color: white;
+  color: rgb(40, 39, 42);
+}
+
+.errors{
+  color: red;
+}
+
+/* === Утилиты для колонок === */
+.cols-2 { --column-count: 2; }
+.cols-3 { --column-count: 3; }
+.cols-4 { --column-count: 4; }
+.cols-5 { --column-count: 5; }
+
+/* === Общая сетка для галерей === */
+.gallery-base,
+.mdx-gallery{
+  --min-item-width: 220px;
+  --gap: 8px;
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-item-width), 1fr));
+  margin: auto;
+  max-width: calc(5 * var(--min-item-width) + 4 * var(--gap));  
+}
+
+.mdx-video-gallery {
+  --min-item-width: 250px;
+  max-width: calc(3 * var(--min-item-width) + 4 * var(--gap));
+}
+
+/* ===  Общие стили для подписей === */
+.mdx-video-gallery-caption,
+.mdx-gallery-caption,
+.mdx-photo-caption {
+  display: block;
+  border-top: 1px solid var(--border-color);
+  font-size: .9em;
+  font-style: italic;
+  padding: 0 4px;
+  margin: 0 4px 0;  
+}
+
+/* === Фронтматтер === */
+
+.frontmatter-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.frontmatter-table th,
+.frontmatter-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.frontmatter-table th {
+  background-color: #f9f9f9;
+  font-weight: 600;
 }
 
 .frontmatter-cover {
-  width: 150px;
-  height: auto;
-  border-radius: 4px;
-}
-
-.frontmatter-table img.frontmatter-cover {
-  width: 150px;
-  height: auto;
   display: block;
-  margin: 0 auto;
+  max-width: 120px;
+  height: auto;
   border-radius: 4px;
+  object-fit: cover;
 }
 
-/* === Float-классы === */
-.float-right {
-  float: right;
-  margin: 0 var(--gallery-gap) var(--gallery-gap) 0;
-}
-.float-left {
-  float: left;
-  margin: 0 0 var(--gallery-gap) var(--gallery-gap);
-}
-
-/* === Фото === */
+  
+/* === Фото: контейнер и картинка === */
 .mdx-photo {
-  margin: 1em 0;
-  border-radius: var(--gallery-radius);
+  background: var(--item-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
   overflow: hidden;
 }
-.mdx-photo img {
+.mdx-photo > img {
   display: block;
   width: 100%;
-  height: auto;
-}
-.mdx-photo .mdx-photo-caption {
-  background: #fff;
-  padding: 0.5em 0.25em;
-  font-size: 0.875em;
-  color: var(--gallery-caption-color);
-  text-align: center;
-}
-
-/* === Общие для всех галерей === */
-.mdx-gallery,
-.mdx-video-gallery {
-  display: grid;
-  gap: var(--gallery-gap);
-  margin: 1em 0;
-}
-
-/* === Картинка-галерея (максимум 5 столбцов) === */
-.mdx-gallery {
-  grid-template-columns: repeat(5, 1fr);
-}
-.mdx-gallery .mdx-gallery-item {
-  background: var(--thumbnail-bg);
-  border-radius: var(--gallery-radius);
-  overflow: hidden;
-  text-align: center;
-}
-.mdx-gallery .mdx-gallery-item img {
-  display: block;
-  width: 100%;
-  height: auto;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.mdx-photo:hover > img {
+  transform: scale(1.05);
 }
 
-/* === Видео-галерея (максимум 3 столбца) === */
-.mdx-video-gallery {
-  grid-template-columns: repeat(3, 1fr);
+/* === Фото-галерея: контейнер и картинка === */
+.mdx-gallery-item {
+  background: var(--item-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
-.mdx-video-gallery .mdx-video-gallery-item {
+.mdx-gallery-item > img {
+  display: block;
+  width: 100%;  
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mdx-video-gallery-item > img {
+  display: block;
+  width: 100%;  
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.mdx-gallery-item:hover > img {
+  transform: scale(1.05);
+}
+
+/* === Видео-галерея: контейнер элемента === */
+.mdx-video-gallery-item {
+  background: var(--item-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: visible; /* подпись пока снизу */
   position: relative;
-  background: var(--thumbnail-bg);
-  border-radius: var(--gallery-radius);
-  overflow: hidden;
-  text-align: center;
-}
-.mdx-video-gallery .mdx-video-gallery-item img,
-.mdx-video-gallery .mdx-video-gallery-placeholder {
-  display: block;
-  width: 100%;
-  height: var(--video-thumb-height);
-  object-fit: cover;
-  background: var(--thumbnail-bg);
 }
 
-/* === Одиночный видео-плеер === */
-.mdx-video-player {
+/* === Ваша структура: обёртка медиа === */
+.media-wrapper {
+  width: 100%;  
+  overflow: hidden;
   position: relative;
-  margin: 1em 0;
-  background: var(--thumbnail-bg);
-  border-radius: var(--gallery-radius);
-  overflow: hidden;
-}
-.mdx-video-player img,
-.mdx-video-player .mdx-video-placeholder {
-  display: block;
-  width: 100%;
-  height: var(--video-thumb-height);
-  object-fit: cover;
-  background: var(--thumbnail-bg);
+  /* border: 1px solid var(--border-color); */
+  border-radius: var(--border-radius);
 }
 
-/* === Play-icon: круг === */
-.mdx-video-player .mdx-video-play-icon,
-.mdx-video-gallery .mdx-video-gallery-play-icon {
+.aspect-ratio-4-3{
+  aspect-ratio: 4/3;
+}
+
+.aspect-ratio-16-9{
+  aspect-ratio: 16/9;
+}
+
+/* делаем ссылку на весь блок media-wrapper */
+.media-wrapper > .mdx-video-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* картинка или плейсхолдер внутри media-wrapper */
+.media-wrapper img,
+.media-wrapper .mdx-video-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--placeholder-bg);
+  transition: transform 0.3s ease;
+}
+.media-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+/* иконка “play” внутри media-wrapper */
+.media-wrapper .mdx-video-play-icon {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 50%;
+  width: var(--play-icon-size);
+  height: var(--play-icon-size);
   pointer-events: none;
-}
-.mdx-video-player .mdx-video-play-icon {
-  width: 3em;
-  height: 3em;
-}
-.mdx-video-gallery .mdx-video-gallery-play-icon {
-  width: 2.5em;
-  height: 2.5em;
+  z-index: 2;
 }
 
-/* === Play-icon: треугольник === */
-.mdx-video-player .mdx-video-play-icon span {
-  width: 0;
-  height: 0;
-  border-left: 0.8em solid #fff;
-  border-top: 0.5em solid transparent;
-  border-bottom: 0.5em solid transparent;
-}
-.mdx-video-gallery .mdx-video-gallery-play-icon span {
-  width: 0;
-  height: 0;
-  border-left: 0.6em solid #fff;
-  border-top: 0.4em solid transparent;
-  border-bottom: 0.4em solid transparent;
+.media-wrapper .mdx-video-play-icon .play-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% + 1em);
+  height: calc(100% + 1em);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  z-index: 1;
 }
 
-/* === Подписи === */
-.mdx-gallery .mdx-gallery-caption,
-.mdx-video-gallery .mdx-video-gallery-caption,
-.mdx-video-player .mdx-video-player-caption {
-  background: #fff;
-  padding: 0.5em 0.25em;
-  font-size: 0.875em;
-  color: var(--gallery-caption-color);
-  text-align: center;
+.media-wrapper .mdx-video-play-icon .play-triangle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0; height: 0;
+  border-left: .8em solid #333;
+  border-top: .6em solid transparent;
+  border-bottom: .6em solid transparent;
+  z-index: 2;
+}
+
+/* === Float-классы === */
+.float-left {
+  float: left;
+  margin: 0 var(--grid-margin) var(--grid-margin) 0;
+}
+.float-right {
+  float: right;
+  margin: 0 0 var(--grid-margin) var(--grid-margin);
+}
+.float-center {
+  display: block;
+  margin: 0 auto var(--grid-margin) auto;
 }
