@@ -56,10 +56,35 @@ body {
   margin: 0 4px 0;  
 }
 
-/* === Картинка во фронтматтере === */
-.frontmatter-cover{
-  width: 200px;
+/* === Фронтматтер === */
+
+.frontmatter-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
 }
+
+.frontmatter-table th,
+.frontmatter-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.frontmatter-table th {
+  background-color: #f9f9f9;
+  font-weight: 600;
+}
+
+.frontmatter-cover {
+  display: block;
+  max-width: 120px;
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
   
 /* === Фото: контейнер и картинка === */
 .mdx-photo {
