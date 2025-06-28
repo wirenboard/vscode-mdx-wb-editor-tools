@@ -63,10 +63,10 @@ export function activate(context: vscode.ExtensionContext) {
               previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ false);
             } else {
               // создаём новую панель и слушаем её закрытие
-              previewPanel = vscode.window.createWebviewPanel(
-                'mdxPreview',
-                `Preview: ${path.basename(doc.fileName)}`,
-                vscode.ViewColumn.Beside,
+                  previewPanel = vscode.window.createWebviewPanel(
+                      'mdxPreview',
+                      `Preview: ${path.basename(doc.fileName)}`,
+                      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
                 {
                   enableScripts: true,
                   localResourceRoots: [
@@ -86,6 +86,20 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
   context.subscriptions.push(previewCommand);
+
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(editor => {
+          if (editor && previewPanel) {
+            const doc = editor.document;
+            previewDocumentUri = doc.uri;
+            // обновляем заголовок и показываем панель
+            previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
+            previewPanel.reveal(vscode.ViewColumn.Beside, /*preserveFocus=*/ true);
+            // рендерим новый документ
+            updatePreview(doc, context);
+          }
+        })
+      );  
 
   const cssWatcher = vscode.workspace.createFileSystemWatcher(
     new vscode.RelativePattern(
