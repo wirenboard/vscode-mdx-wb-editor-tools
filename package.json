@@ -15,8 +15,7 @@
     "Visualization"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:mdx-preview.showPreview"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "scripts": {
@@ -44,7 +43,7 @@
     "templates/",
     "LICENSE",
     "README.md"
-  ],  
+  ],
   "contributes": {
     "commands": [
       {
