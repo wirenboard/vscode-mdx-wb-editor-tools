@@ -1,4 +1,6 @@
 <div class="mdx-photo {{floatClass}}" {{#if width}}style="width:{{width}}"{{/if}}>
-  <img src="{{src}}" alt="{{alt}}" {{#if width}}style="width:{{width}}"{{/if}}>
+  <div class="media-wrapper">
+    <img src="{{src}}" alt="{{alt}}" {{#if width}}style="width:{{width}}"{{/if}}>
+  </div>  
   {{#if caption}}<div class="mdx-photo-caption">{{caption}}</div>{{/if}}
 </div>
