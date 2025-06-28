@@ -157,7 +157,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
 };
 ```
 
-### 4. Стилизация (без изменений)
+### 4. Стилизация
 ```css
 .mdx-my-component {
   display: grid;
