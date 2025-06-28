@@ -1,108 +1,114 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { renderWithComponents } from './renderer';
+import { MarkdownRenderer } from './renderer';
 
-let previewPanel: vscode.WebviewPanel | undefined;
-let previewDocumentUri: vscode.Uri | undefined;
+export class WebviewManager {
+  private previewPanel: vscode.WebviewPanel | undefined;
+  private previewDocumentUri: vscode.Uri | undefined;
+  private readonly renderer: MarkdownRenderer;
 
-
-export function initializeWebviewManager(context: vscode.ExtensionContext) {
-  setupWebviewListeners(context);
-
-  const previewCommand = vscode.commands.registerCommand(
-    'mdx-preview.showPreview',
-    () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showErrorMessage('Нет открытого MD-файла');
-        return;
-      }
-      createPreviewPanel(editor.document, context);
-    }
-  );
-  context.subscriptions.push(previewCommand);
-}
-
-function setupWebviewListeners(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument((document) => {
-      const stylePath = path.join(context.extensionPath, 'media', 'styles.css');
-      const isStyleChange = document.uri.fsPath === stylePath;
-      if (previewPanel && (isStyleChange || previewDocumentUri?.toString() === document.uri.toString())) {
-        updateWebviewContentFromUri(
-          isStyleChange ? previewDocumentUri : document.uri,
-          context
-        );
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-      if (editor && previewPanel) {
-        const doc = editor.document;
-        previewDocumentUri = doc.uri;
-        previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
-        previewPanel.reveal(vscode.ViewColumn.Beside, true);
-        updateWebviewContentFromUri(doc.uri, context);
-      }
-    })
-  );
-
-  const cssWatcher = vscode.workspace.createFileSystemWatcher(
-    new vscode.RelativePattern(
-      path.join(context.extensionPath, 'media'),
-      'styles.css'
-    )
-  );
-  cssWatcher.onDidChange(() => {
-    updateWebviewContentFromUri(previewDocumentUri, context);
-  });
-  context.subscriptions.push(cssWatcher);
-}
-
-export function createPreviewPanel(document: vscode.TextDocument, context: vscode.ExtensionContext) {
-  const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  previewPanel = vscode.window.createWebviewPanel(
-    'mdxPreview',
-    `Preview: ${path.basename(document.fileName)}`,
-    { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
-    {
-      enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.file(path.join(ws ?? '', 'public')),
-        vscode.Uri.file(path.join(ws ?? '', 'content'))
-      ]
-    }
-  );
-
-  previewPanel.onDidDispose(() => {
-    previewPanel = undefined;
-    previewDocumentUri = undefined;
-  });
-
-  previewDocumentUri = document.uri;
-  updateWebviewContentFromUri(document.uri, context);
-}
-
-function updateWebviewContent(document: vscode.TextDocument, context: vscode.ExtensionContext) {
-  if (!previewPanel) return;
- 
-  try {
-    previewPanel.webview.html = renderWithComponents(
-      document.getText(),
-      previewPanel.webview,
-      document.uri,
-      context
-    );
-  } catch (error) {
-    console.error('Preview update error:', error);
+  constructor(private readonly context: vscode.ExtensionContext) {
+    this.renderer = new MarkdownRenderer(context);
+    this.setupWebviewListeners();
   }
-}
 
-export function updateWebviewContentFromUri(uri: vscode.Uri | undefined, context: vscode.ExtensionContext) {
-  if (!uri) return;
-  vscode.workspace
-    .openTextDocument(uri)
-    .then(doc => updateWebviewContent(doc, context));
+  public initialize() {
+    const previewCommand = vscode.commands.registerCommand(
+      'mdx-preview.showPreview',
+      () => this.showPreview()
+    );
+    this.context.subscriptions.push(previewCommand);
+  }
+
+  private showPreview() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('Нет открытого MD-файла');
+      return;
+    }
+    this.createPreviewPanel(editor.document);
+  }
+
+  private setupWebviewListeners() {
+    this.context.subscriptions.push(
+      vscode.workspace.onDidSaveTextDocument((document) => {
+        const stylePath = path.join(this.context.extensionPath, 'media', 'styles.css');
+        const isStyleChange = document.uri.fsPath === stylePath;
+        if (this.previewPanel && (isStyleChange || this.previewDocumentUri?.toString() === document.uri.toString())) {
+          this.updateWebviewContentFromUri(
+            isStyleChange ? this.previewDocumentUri : document.uri
+          );
+        }
+      })
+    );
+
+    this.context.subscriptions.push(
+      vscode.window.onDidChangeActiveTextEditor(editor => {
+        if (editor && this.previewPanel) {
+          const doc = editor.document;
+          this.previewDocumentUri = doc.uri;
+          this.previewPanel.title = `Preview: ${path.basename(doc.fileName)}`;
+          this.previewPanel.reveal(vscode.ViewColumn.Beside, true);
+          this.updateWebviewContentFromUri(doc.uri);
+        }
+      })
+    );
+
+    const cssWatcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(
+        path.join(this.context.extensionPath, 'media'),
+        'styles.css'
+      )
+    );
+    cssWatcher.onDidChange(() => {
+      this.updateWebviewContentFromUri(this.previewDocumentUri);
+    });
+    this.context.subscriptions.push(cssWatcher);
+  }
+
+  private createPreviewPanel(document: vscode.TextDocument) {
+    const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    this.previewPanel = vscode.window.createWebviewPanel(
+      'mdxPreview',
+      `Preview: ${path.basename(document.fileName)}`,
+      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+      {
+        enableScripts: true,
+        localResourceRoots: [
+          vscode.Uri.file(path.join(ws ?? '', 'public')),
+          vscode.Uri.file(path.join(ws ?? '', 'content'))
+        ]
+      }
+    );
+
+    this.previewPanel.onDidDispose(() => {
+      this.previewPanel = undefined;
+      this.previewDocumentUri = undefined;
+    });
+
+    this.previewDocumentUri = document.uri;
+    this.updateWebviewContentFromUri(document.uri);
+  }
+
+  private updateWebviewContent(document: vscode.TextDocument) {
+    if (!this.previewPanel) return;
+
+    try {
+      this.previewPanel.webview.html = this.renderer.render(
+        document.getText(),
+        this.previewPanel.webview,
+        document.uri,
+        this.context
+      );
+    } catch (error) {
+      console.error('Preview update error:', error);
+    }
+  }
+
+  private updateWebviewContentFromUri(uri: vscode.Uri | undefined) {
+    if (!uri) return;
+    vscode.workspace
+      .openTextDocument(uri)
+      .then(doc => this.updateWebviewContent(doc));
+  }
 }
