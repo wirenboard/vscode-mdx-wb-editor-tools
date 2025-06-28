@@ -97,7 +97,7 @@ const componentRenderers: Record<string, ComponentRenderer> = {
       src: resolveRelativePath(webview, docUri, attrs.src),
       alt: attrs.alt || '',
       caption: attrs.caption,
-      width: normalizeSize(attrs.width, '500px'),
+      width: normalizeSize(attrs.width, '100%'),
       floatClass: attrs.float ? `float-${attrs.float}` : ''
     });
   },
