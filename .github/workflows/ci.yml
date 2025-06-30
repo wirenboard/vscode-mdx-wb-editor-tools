@@ -62,21 +62,23 @@ jobs:
             exit 1
           fi
 
-      - name: Bundle with esbuild
+      - name: Bundle with esbuild        
+        shell: bash
         run: |
-          # Собираем бандл и ловим stderr в esbuild.err, но не падаем сразу
+          set +e
+
           npx esbuild out/extension.js \
             --bundle \
             --platform=node \
             --external:vscode \
-            --outfile=out/extension.bundle.js 2>esbuild.err || true
+            --outfile=out/extension.bundle.js 2>esbuild.err
 
-          # Если в esbuild.err есть текст — конвертим в ::error и падаем
           if [ -s esbuild.err ]; then
             sed -E 's~([^:]+):([0-9]+):([0-9]+): error: (.*)~::error file=\1,line=\2,col=\3:: \4~' esbuild.err \
               | while read -r e; do echo "$e"; done
             exit 1
-          fi || true      
+          fi
+     
 
       - name: Install VSCE CLI
         run: npm install --global vsce
