@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
       - name: Install dependencies
         run: npm ci
@@ -50,10 +50,18 @@ jobs:
         run: |
           npm install --global vsce
           npm run package
+          # Compute outputs for later steps
+          NAME=$(jq -r .name package.json)
+          VERSION=$(jq -r .version package.json)
+          VSIX_PATH="dist/${NAME}-${VERSION}.vsix"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "vsix=${VSIX_PATH}" >> $GITHUB_OUTPUT
+          echo "name=${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT
         env:
           CI: true
 
       - uses: actions/upload-artifact@v4
+        with:  @v4
         with:
           name: vsix
           path: ${{ steps.package.outputs.vsix }}
