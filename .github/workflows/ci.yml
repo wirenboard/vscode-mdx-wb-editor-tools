@@ -82,7 +82,7 @@ jobs:
           echo "vsix=dist/${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vsix
           path: ${{ steps.package.outputs.vsix }}
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download VSIX artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vsix
           path: dist/
