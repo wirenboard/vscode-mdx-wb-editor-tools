@@ -54,6 +54,11 @@ jobs:
       - name: Package VSIX
         run: npm run package        
 
+      - name: Debug dist folder
+        run: |
+          echo "PWD: $PWD"
+          ls -R dist || echo "No dist found"
+
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
