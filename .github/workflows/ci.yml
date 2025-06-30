@@ -55,7 +55,7 @@ jobs:
         run: npm run package
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vsix
           path: dist/*.vsix
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: vsix
           path: dist/
