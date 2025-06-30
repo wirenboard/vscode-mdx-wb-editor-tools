@@ -36,21 +36,26 @@ jobs:
       version: ${{ steps.package.outputs.version }}
       vsix-path: ${{ steps.package.outputs.vsix }}
       vsix-name: ${{ steps.package.outputs.name }}
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Install VSCE CLI
+        run: npm install --global @vscode/vsce
+
       - name: Build & Package Extension
         id: package
         run: |
-          npm install --global vsce
+          mkdir -p dist
           npm run package
 
           NAME=$(jq -r .name package.json)
@@ -72,7 +77,6 @@ jobs:
     if: github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -90,10 +94,10 @@ jobs:
 
       - name: Upload VSIX to Release
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ needs.build.outputs.vsix-path }}
           asset_name: ${{ needs.build.outputs.vsix-name }}
           asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
