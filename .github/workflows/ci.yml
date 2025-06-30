@@ -63,38 +63,13 @@ jobs:
           fi
 
       - name: Bundle with esbuild
-        shell: bash
-        id: bundle
         run: |
-          set +e
-
-          # 1) Собираем бандл, stderr → esbuild.err
-          npx esbuild out/extension.js \
-            --bundle \
-            --platform=node \
-            --external:vscode \
-            --outfile=out/extension.bundle.js 2>esbuild.err
-          ESB_STATUS=$?
-
-          if [ -s esbuild.err ]; then
-            sed -E 's~([^:]+):([0-9]+):([0-9]+): error: (.*)~::error file=\1,line=\2,col=\3:: \4~' esbuild.err \
+          npx esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js ./ 2>tsc.err || true
+          if [ -s tsc.err ]; then
+            sed -E 's~([^ ]+\.ts)\(([0-9]+),([0-9]+)\): error ([A-Z0-9]+): (.*)~::error file=\1,line=\2,col=\3::[\4] \5~' tsc.err \
               | while read -r e; do echo "$e"; done
             exit 1
-          fi
-
-          if [ $ESB_STATUS -ne 0 ]; then
-            exit $ESB_STATUS
-          fi
-
-          SIZE_BYTES=$(stat -c%s out/extension.bundle.js)
-          SIZE_HUMAN=$(du -h out/extension.bundle.js | cut -f1)
-          echo "bundle_path=out/extension.bundle.js" >> $GITHUB_OUTPUT
-          echo "bundle_size_bytes=${SIZE_BYTES}" >> $GITHUB_OUTPUT
-          echo "bundle_size_human=${SIZE_HUMAN}" >> $GITHUB_OUTPUT
-
-          echo "Bundle created: out/extension.bundle.js (${SIZE_HUMAN})"
-
-     
+          fi     
 
       - name: Install VSCE CLI
         run: npm install --global vsce
