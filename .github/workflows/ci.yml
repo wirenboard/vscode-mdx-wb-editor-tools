@@ -69,6 +69,9 @@ jobs:
       - name: Install VSCE CLI
         run: npm install --global vsce
 
+      - name: Disable prepublish script
+        run: npm pkg delete scripts.vscode:prepublish
+
       - name: Package VSIX
         id: package
         run: |
