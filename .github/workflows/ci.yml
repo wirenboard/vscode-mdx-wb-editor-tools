@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+    branches-ignore:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check version bump
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin main
+          MAIN_VER=$(jq -r .version <(git show origin/main:package.json))
+          PR_VER=$(jq -r .version package.json)
+          echo "Main version: $MAIN_VER, PR version: $PR_VER"
+          if [ "$(printf '%s\n%s\n' "$MAIN_VER" "$PR_VER" | sort -V | head -n1)" = "$PR_VER" ]; then
+            echo "::error file=package.json::Version must be bumped: PR ($PR_VER) ≤ main ($MAIN_VER)"
+            exit 1
+          fi
+
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    outputs:
+      vsix-path: ${{ steps.package.outputs.vsix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package VSIX
+        id: package
+        run: |
+          npm run package
+          echo "::set-output name=vsix::dist/${{ npm_package_name }}-${{ npm_package_version }}.vsix"
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vsix
+          path: ${{ steps.package.outputs.vsix }}
+
+  release:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vsix
+          path: dist/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ github.sha }}
+          release_name: Release ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload VSIX to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/${{ npm_package_name }}-${{ npm_package_version }}.vsix
+          asset_name: ${{ npm_package_name }}-${{ npm_package_version }}.vsix
+          asset_content_type: application/octet-stream
