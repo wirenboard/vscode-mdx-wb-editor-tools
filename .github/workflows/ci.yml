@@ -63,7 +63,6 @@ jobs:
           NAME=$(jq -r .name package.json)
           VERSION=$(jq -r .version package.json)
           FINAL="dist/${NAME}-${VERSION}.vsix"
-          mv dist/temp.vsix "$FINAL"
           echo "version=${VERSION}"       >> $GITHUB_OUTPUT
           echo "vsix=${FINAL}"            >> $GITHUB_OUTPUT
           echo "name=${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT                 
