@@ -92,7 +92,7 @@ release:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: dist/*.vsix
-        asset_name: $(basename dist/*.vsix)
+        asset_name: ${{ needs.build.outputs.package.version }}.vsix
         asset_content_type: application/octet-stream
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
