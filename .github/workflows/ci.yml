@@ -27,8 +27,7 @@ jobs:
           if [ "$(printf '%s\n%s\n' "$MAIN" "$PR" | sort -V | head -n1)" = "$PR" ]; then
             echo "::error file=package.json::Version must be bumped: PR ($PR) ≤ main ($MAIN)"
             exit 1
-          fi
-          true
+          fi          
 
   build:
     needs: version
@@ -75,7 +74,8 @@ jobs:
             sed -E 's~([^:]+):([0-9]+):([0-9]+): error: (.*)~::error file=\1,line=\2,col=\3:: \4~' esbuild.err \
               | while read -r e; do echo "$e"; done
             exit 1
-          fi       
+          fi
+          true       
 
       - name: Install VSCE CLI
         run: npm install --global vsce
