@@ -28,6 +28,7 @@ jobs:
             echo "::error file=package.json::Version must be bumped: PR ($PR) ≤ main ($MAIN)"
             exit 1
           fi
+          true
 
   build:
     needs: version
