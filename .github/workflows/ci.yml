@@ -51,6 +51,9 @@ jobs:
       - name: Install VSCE CLI
         run: npm install --global vsce        
 
+      - name: Create dist directory
+        run: mkdir -p dist
+        
       - name: Package VSIX
         run: ls -l && npm run package        
 
