@@ -5,7 +5,7 @@
         ":photo{",
         "  src=\"${1:URL}\"",
         "  ${2:caption=\"\"}",
-        "  ${3:width=\"300px\"}",
+        "  ${3:width=\"200px\"}",
         "  ${4:float=\"${5|right,left,center|}\"}",
         "}"
       ],
@@ -13,7 +13,7 @@
       "docs": {
         "attributes": {
           "src": {
-            "description": "URL изображения",
+            "description": "Путь к картинке (например, my_dir/my_photo.jpg)",
             "default": ""
           },
           "caption": {
@@ -21,14 +21,13 @@
             "default": ""
           },
           "width": {
-            "description": "Ширина изображения (например, \"300px\" или \"50%\")",
-            "default": "300px",
-            "values": ["100px", "200px", "300px", "50%", "100%"]
+            "description": "Ширина изображения (например, \"200px\", \"50%\", \"auto\")",
+            "default": "200px"
           },
           "float": {
             "description": "Выравнивание изображения",
-            "default": "center",
-            "values": ["right", "left", "center"]
+            "default": "right",
+            "values": ["left", "center", "right"]
           }
         }
       }
@@ -56,7 +55,7 @@
         "attributes": {
           "data": {
             "description": "JSON-массив данных для галереи",
-            "default": "[]"
+            "default": ""
           }
         }
       }
@@ -80,14 +79,12 @@
             "default": ""
           },
           "width": {
-            "description": "Ширина плеера",
-            "default": "500px",
-            "values": ["300px", "400px", "500px", "100%"]
+            "description": "Ширина плеера (например, \"500px\", \"50%\", \"auto\")",
+            "default": "500px"
           },
           "height": {
-            "description": "Высота плеера",
-            "default": "280px",
-            "values": ["200px", "280px", "360px"]
+            "description": "Высота плеера (например, \"500px\", \"50%\", \"auto\")",
+            "default": "280px"            
           },
           "float": {
             "description": "Выравнивание плеера",
@@ -95,7 +92,7 @@
             "values": ["left", "right", "center"]
           },
           "cover": {
-            "description": "URL обложки видео",
+            "description": "Путь к обложке видео (например, my_dir/my_cover.jpg). Если не указать, то подгрузится сам ролик.",
             "default": ""
           }
         }

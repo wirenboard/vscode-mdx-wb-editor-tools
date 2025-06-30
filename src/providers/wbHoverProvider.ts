@@ -176,7 +176,7 @@ export class WBHoverProvider implements vscode.HoverProvider {
           const possible = Array.isArray(info.values) ? info.values.join(', ') : '—';
           const md = new vscode.MarkdownString(
             `**${key}** — ${info.description}\n\n` +
-            `**Возможные значения:** ${possible}\n` +
+            `**Возможные значения:** ${possible}  \n` +
             `**По умолчанию:** ${info.default ?? '—'}`
           );
           md.isTrusted = true;
