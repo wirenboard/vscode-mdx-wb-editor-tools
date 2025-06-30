@@ -64,7 +64,7 @@ jobs:
 
       - name: Bundle with esbuild
         run: |
-          npx esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js ./ 2>bld.err || true
+          npx esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js 2>bld.err || true
           if [ -s bld.err ]; then
             sed -E 's~([^ ]+\.ts)\(([0-9]+),([0-9]+)\): error ([A-Z0-9]+): (.*)~::error file=\1,line=\2,col=\3::[\4] \5~' bld.err \
               | while read -r e; do echo "$e"; done
