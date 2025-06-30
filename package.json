@@ -3,7 +3,7 @@
   "publisher": "wirenboard",
   "displayName": "MDX Preview",
   "description": "Preview MDX-style markdown with components for Wiren Board",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -17,11 +17,13 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/extension.bundle.js",
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "npm run compile && mkdir -p dist && vsce package -o dist/${npm_package_name}-${npm_package_version}.vsix",
+    "bundle": "esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js",
+    "vscode:prepublish": "npm run compile && npm run bundle",
+    "package": "vsce package -o dist/${npm_package_name}-${npm_package_version}.vsix",
     "devinstall": "npm run package && codium --install-extension dist/${npm_package_name}-${npm_package_version}.vsix --force"
   },
   "devDependencies": {
@@ -29,6 +31,7 @@
     "@types/node": "^20.5.6",
     "@types/vscode": "^1.85.0",
     "@vscode/test-electron": "^2.3.2",
+    "esbuild": "^0.25.5",
     "typescript": "^5.4.5"
   },
   "dependencies": {
