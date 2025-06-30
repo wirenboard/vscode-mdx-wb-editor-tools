@@ -47,7 +47,9 @@ jobs:
 
       - name: Build & Package Extension
         id: package
-        run: npm run package
+        run: |
+          npm install --global vsce
+          npm run package
         env:
           CI: true
 
