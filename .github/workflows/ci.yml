@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: vsix
+          name: ${{ needs.build.outputs.vsix-name }}
           path: dist/
 
       - name: Create GitHub Release
