@@ -17,7 +17,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Check version bump
         if: github.event_name == 'pull_request'
         run: |
@@ -25,9 +24,9 @@ jobs:
           MAIN=$(jq -r .version <(git show origin/main:package.json))
           PR=$(jq -r .version package.json)
           if [ "$(printf '%s\n%s\n' "$MAIN" "$PR" | sort -V | head -n1)" = "$PR" ]; then
-            echo "::error file=package.json::Version must be bumped: PR ($PR) ≤ main ($MAIN)"
+            echo "Version must be bumped: PR ($PR) ≤ main ($MAIN)"
             exit 1
-          fi          
+          fi
 
   build:
     needs: version
@@ -44,52 +43,13 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: |
-          npm install 2>ci.err || true
-          if [ -s ci.err ]; then
-            while read -r line; do
-              echo "::error file=package.json::$line"
-            done < ci.err
-            exit 1
-          fi
+        run: npm ci
 
-      - name: Compile TypeScript
-        run: |
-          npx tsc -p ./ 2>tsc.err || true
-          if [ -s tsc.err ]; then
-            sed -E 's~([^ ]+\.ts)\(([0-9]+),([0-9]+)\): error ([A-Z0-9]+): (.*)~::error file=\1,line=\2,col=\3::[\4] \5~' tsc.err \
-              | while read -r e; do echo "$e"; done
-            exit 1
-          fi
-
-      - name: Bundle with esbuild
-        run: |
-          npx esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js   
-
-      - name: Install VSCE CLI
-        run: npm install --global vsce
-
-      - name: Disable prepublish script
-        run: npm pkg delete scripts.vscode:prepublish
-
-      - name: Package VSIX
+      - name: Build & Package Extension
         id: package
-        run: |
-          mkdir -p dist
-          npx vsce package -o dist/temp.vsix 2>pkg.err || true
-          if [ -s pkg.err ]; then
-            while read -r line; do
-              echo "::error file=dist::$line"
-            done < pkg.err
-            exit 1
-          fi
-          NAME=$(jq -r .name package.json)
-          VERSION=$(jq -r .version package.json)
-          FINAL="dist/${NAME}-${VERSION}.vsix"
-          mv dist/temp.vsix "$FINAL"
-          echo "version=${VERSION}"       >> $GITHUB_OUTPUT
-          echo "vsix=${FINAL}"            >> $GITHUB_OUTPUT
-          echo "name=${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT
+        run: npm run package
+        env:
+          CI: true
 
       - uses: actions/upload-artifact@v4
         with:
