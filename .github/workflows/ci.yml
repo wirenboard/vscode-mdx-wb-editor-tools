@@ -59,14 +59,13 @@ jobs:
 
       - name: Get version
         id: package
-        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_OUTPUT
+        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_ENV
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.package.outputs.version }}.vsix
+          name: ${{ env.version }}.vsix.zip
           path: dist/*.vsix
-          retention-days: 2
 
   release:
     if: github.event_name == 'push'
@@ -76,7 +75,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build.outputs.package.version }}.vsix
+          name: ${{ needs.build.outputs.package.version }}.vsix.zip
           path: dist/
 
       - name: Create GitHub Release
