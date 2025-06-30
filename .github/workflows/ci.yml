@@ -23,7 +23,7 @@ jobs:
           git fetch origin main
           MAIN_VER=$(jq -r .version <(git show origin/main:package.json))
           PR_VER=$(jq -r .version package.json)
-          echo "Main version: $MAIN_VER, PR version: $PR_VER"
+          echo "Main: $MAIN_VER, PR: $PR_VER"
           if [ "$(printf '%s\n%s\n' "$MAIN_VER" "$PR_VER" | sort -V | head -n1)" = "$PR_VER" ]; then
             echo "::error file=package.json::Version must be bumped: PR ($PR_VER) ≤ main ($MAIN_VER)"
             exit 1
@@ -44,13 +44,42 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci 2>ci.err || true
+          if [ -s ci.err ]; then
+            while IFS= read -r line; do
+              echo "::error file=package.json::$line"
+            done < ci.err
+            exit 1
+          fi
+
+      - name: Compile TypeScript
+        run: |
+          npx tsc -p ./ 2>tsc.err || true
+          if [ -s tsc.err ]; then
+            sed -E 's~([^ ]+\.ts)\(([0-9]+),([0-9]+)\): error ([A-Z0-9]+): (.*)~::error file=\1,line=\2,col=\3::[\4] \5~' tsc.err \
+              | while IFS= read -r e; do echo "$e"; done
+            exit 1
+          fi
+
+      - name: Install VSCE CLI
+        run: npm install --global vsce
 
       - name: Package VSIX
         id: package
         run: |
-          npm run package
-          echo "::set-output name=vsix::dist/${{ npm_package_name }}-${{ npm_package_version }}.vsix"
+          mkdir -p dist
+          npx vsce package -o dist/temp.vsix 2>pkg.err || true
+          if [ -s pkg.err ]; then
+            while IFS= read -r line; do
+              echo "::error file=dist::$line"
+            done < pkg.err
+            exit 1
+          fi
+          NAME=$(jq -r .name package.json)
+          VERSION=$(jq -r .version package.json)
+          mv dist/temp.vsix dist/${NAME}-${VERSION}.vsix
+          echo "vsix=dist/${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v3
@@ -69,7 +98,7 @@ jobs:
           name: vsix
           path: dist/
 
-      - name: Create Release
+      - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         with:
@@ -82,6 +111,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/${{ npm_package_name }}-${{ npm_package_version }}.vsix
-          asset_name: ${{ npm_package_name }}-${{ npm_package_version }}.vsix
+          asset_path: ${{ needs.build.outputs.vsix-path }}
+          asset_name: ${{ needs.build.outputs.vsix-path }}
           asset_content_type: application/octet-stream
