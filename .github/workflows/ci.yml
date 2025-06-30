@@ -41,21 +41,27 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: vscode-mdx-preview-wb-style
 
       - name: Compile TypeScript
         run: npm run compile
+        working-directory: vscode-mdx-preview-wb-style
 
       - name: Bundle with esbuild
         run: npm run bundle
+        working-directory: vscode-mdx-preview-wb-style
 
       - name: Install VSCE CLI
         run: npm install --global vsce
+        working-directory: vscode-mdx-preview-wb-style
 
       - name: Package VSIX
         run: npm run package
+        working-directory: vscode-mdx-preview-wb-style
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
+        working-directory: vscode-mdx-preview-wb-style
         with:
           name: vsix
           path: dist/*.vsix
@@ -82,6 +88,7 @@ jobs:
 
       - name: Upload VSIX to Release
         uses: actions/upload-release-asset@v1
+        working-directory: vscode-mdx-preview-wb-style
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: dist/*.vsix
