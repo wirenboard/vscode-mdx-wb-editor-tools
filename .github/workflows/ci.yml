@@ -64,8 +64,9 @@ jobs:
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.package.outputs.version }}.vsix.zip
+          name: ${{ steps.package.outputs.version }}.vsix
           path: dist/*.vsix
+          retention-days: 2
 
   release:
     if: github.event_name == 'push'
@@ -75,7 +76,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build.outputs.package.version }}.vsix.zip
+          name: ${{ needs.build.outputs.package.version }}.vsix
           path: dist/
 
       - name: Create GitHub Release
