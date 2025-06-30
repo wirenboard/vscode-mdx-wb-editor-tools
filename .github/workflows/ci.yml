@@ -59,7 +59,7 @@ jobs:
 
       - name: Get version
         id: package
-        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_ENV
+        run: echo "version=$(node -p 'require("./package.json").version')" >> $GITHUB_ENV
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
