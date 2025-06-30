@@ -1,4 +1,7 @@
 name: CI
+# даём GITHUB_TOKEN права на пуш релизов
+permissions:
+  contents: write
 
 on:
   pull_request:
@@ -13,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -23,7 +26,6 @@ jobs:
           git fetch origin main
           MAIN_VER=$(jq -r .version <(git show origin/main:package.json))
           PR_VER=$(jq -r .version package.json)
-          echo "Main: $MAIN_VER, PR: $PR_VER"
           if [ "$(printf '%s\n%s\n' "$MAIN_VER" "$PR_VER" | sort -V | head -n1)" = "$PR_VER" ]; then
             echo "::error file=package.json::Version must be bumped: PR ($PR_VER) ≤ main ($MAIN_VER)"
             exit 1
@@ -34,22 +36,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       vsix-path: ${{ steps.package.outputs.vsix }}
+      vsix-name: ${{ steps.package.outputs.name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: |
-          npm ci 2>ci.err || true
+          npm install 2>ci.err || true
           if [ -s ci.err ]; then
-            while IFS= read -r line; do
-              echo "::error file=package.json::$line"
-            done < ci.err
+            while read -r line; do echo "::error file=package.json::$line"; done < ci.err
             exit 1
           fi
 
@@ -58,7 +61,7 @@ jobs:
           npx tsc -p ./ 2>tsc.err || true
           if [ -s tsc.err ]; then
             sed -E 's~([^ ]+\.ts)\(([0-9]+),([0-9]+)\): error ([A-Z0-9]+): (.*)~::error file=\1,line=\2,col=\3::[\4] \5~' tsc.err \
-              | while IFS= read -r e; do echo "$e"; done
+              | while read -r e; do echo "$e"; done
             exit 1
           fi
 
@@ -71,15 +74,16 @@ jobs:
           mkdir -p dist
           npx vsce package -o dist/temp.vsix 2>pkg.err || true
           if [ -s pkg.err ]; then
-            while IFS= read -r line; do
-              echo "::error file=dist::$line"
-            done < pkg.err
+            while read -r line; do echo "::error file=dist::$line"; done < pkg.err
             exit 1
           fi
           NAME=$(jq -r .name package.json)
           VERSION=$(jq -r .version package.json)
-          mv dist/temp.vsix dist/${NAME}-${VERSION}.vsix
-          echo "vsix=dist/${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT
+          FINAL="dist/${NAME}-${VERSION}.vsix"
+          mv dist/temp.vsix "$FINAL"
+          # Записываем путь и чистое имя файла
+          echo "vsix=$FINAL" >> $GITHUB_OUTPUT
+          echo "name=${NAME}-${VERSION}.vsix" >> $GITHUB_OUTPUT
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
@@ -109,8 +113,10 @@ jobs:
 
       - name: Upload VSIX to Release
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ needs.build.outputs.vsix-path }}
-          asset_name: ${{ needs.build.outputs.vsix-path }}
+          asset_name: ${{ needs.build.outputs.vsix-name }}
           asset_content_type: application/octet-stream
