@@ -57,38 +57,42 @@ jobs:
       - name: Package VSIX
         run: ls -l && npm run package        
 
+      - name: Get version
+        id: package
+        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_OUTPUT
+
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vsix
+          name: ${{ steps.package.outputs.version }}.vsix.zip
           path: dist/*.vsix
 
-  release:
-    if: github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
+release:
+  if: github.event_name == 'push'
+  needs: build
+  runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: vsix
-          path: dist/
+  steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: ${{ needs.build.outputs.package.version }}.vsix.zip
+        path: dist/
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ steps.package.outputs.version }}
-          release_name: v${{ steps.package.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v${{ needs.build.outputs.package.version }}
+        release_name: v${{ needs.build.outputs.package.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload VSIX to Release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/*.vsix
-          asset_name: $(basename dist/*.vsix)
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload VSIX to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/*.vsix
+        asset_name: $(basename dist/*.vsix)
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
