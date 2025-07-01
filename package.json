@@ -3,7 +3,7 @@
   "publisher": "wirenboard",
   "displayName": "MDX WB Editor Tolls",
   "description": "Preview MDX files with Wiren Board components, as well as syntax backlight, snippet and auto filling.",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "engines": {
     "vscode": "^1.85.0"
   },
