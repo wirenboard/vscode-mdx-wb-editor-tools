@@ -14,7 +14,7 @@ export class WebviewManager {
 
   public initialize() {
     const previewCommand = vscode.commands.registerCommand(
-      'mdx-preview.showPreview',
+      'vscode-mdx-wb-editor-tools.showPreview',
       () => this.showPreview()
     );
     this.context.subscriptions.push(previewCommand);
