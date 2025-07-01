@@ -1,0 +1,11 @@
+# Ignore everything
+**
+
+# Allow only the necessary folders/files
+!out/**/*.js
+!media/
+!snippets/
+!templates/
+!syntaxes/
+!LICENSE
+!README.md
