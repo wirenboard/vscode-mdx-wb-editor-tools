@@ -1,15 +1,15 @@
 {
-  "name": "mdx-preview",
+  "name": "vscode-mdx-wb-editor-tools",
   "publisher": "wirenboard",
-  "displayName": "MDX Preview",
-  "description": "Preview MDX-style markdown with components for Wiren Board",
-  "version": "1.1.1",
+  "displayName": "MDX WB Editor Tolls",
+  "description": "Preview MDX files with Wiren Board components, as well as syntax backlight, snippet and auto filling.",
+  "version": "1.1.2",
   "engines": {
     "vscode": "^1.85.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wirenboard/vscode-mdx-preview-wb-style.git"
+    "url": "https://github.com/wirenboard/vscode-mdx-wb-editor-tools.git"
   },
   "categories": [
     "Visualization"
@@ -45,8 +45,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "mdx-preview.showPreview",
-        "title": "Show MDX Preview"
+        "command": "vscode-mdx-wb-editor-tools.showPreview",
+        "title": "Show MDX WB Preview"
       }
     ],
     "snippets": [
