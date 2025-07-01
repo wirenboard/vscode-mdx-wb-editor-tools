@@ -26,9 +26,11 @@ export class MarkdownRenderer {
   ): string {
     if (!relativePath) return '';
 
-    const imgPathRegex = /^[\\/]?img[\\/]/;
-    if (imgPathRegex.test(relativePath)) {
-      const assetPath = relativePath.replace(imgPathRegex, '');
+    const normalizedPath = relativePath.replace(/\\/g, '/');
+
+    const imgPathRegex = /^\/?img\//;
+    if (imgPathRegex.test(normalizedPath)) {
+      const assetPath = normalizedPath.replace(imgPathRegex, '');
       const wf = vscode.workspace.workspaceFolders?.[0];
       if (!wf) {
         console.error('No workspace folder to resolve /img path');
@@ -38,7 +40,7 @@ export class MarkdownRenderer {
         wf.uri.fsPath,
         'public',
         'img',
-        ...assetPath.split(/[\\/]/)
+        ...assetPath.split('/').filter(Boolean)
       );
       const fileUri = vscode.Uri.file(absFs);
       return webview.asWebviewUri(fileUri).toString();
@@ -48,7 +50,7 @@ export class MarkdownRenderer {
     const docDir = path.dirname(docFs);
     const absFs = path.join(
       docDir,
-      ...relativePath.split(/[\\/]/)
+      ...normalizedPath.split('/').filter(Boolean)
     );
     const fileUri = vscode.Uri.file(absFs);
     return webview.asWebviewUri(fileUri).toString();
