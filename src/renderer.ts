@@ -26,21 +26,30 @@ export class MarkdownRenderer {
   ): string {
     if (!relativePath) return '';
 
-    if (/^\/?img\//.test(relativePath)) {
-      const assetPath = relativePath.replace(/^\/?img\//, '');
+    const imgPathRegex = /^[\\/]?img[\\/]/;
+    if (imgPathRegex.test(relativePath)) {
+      const assetPath = relativePath.replace(imgPathRegex, '');
       const wf = vscode.workspace.workspaceFolders?.[0];
       if (!wf) {
         console.error('No workspace folder to resolve /img path');
         return '';
       }
-      const absFs = path.join(wf.uri.fsPath, 'public', 'img', assetPath);
+      const absFs = path.join(
+        wf.uri.fsPath,
+        'public',
+        'img',
+        ...assetPath.split(/[\\/]/)
+      );
       const fileUri = vscode.Uri.file(absFs);
       return webview.asWebviewUri(fileUri).toString();
     }
 
     const docFs = documentUri.fsPath;
     const docDir = path.dirname(docFs);
-    const absFs = path.join(docDir, relativePath);
+    const absFs = path.join(
+      docDir,
+      ...relativePath.split(/[\\/]/)
+    );
     const fileUri = vscode.Uri.file(absFs);
     return webview.asWebviewUri(fileUri).toString();
   }
@@ -163,7 +172,7 @@ export class MarkdownRenderer {
     let processedText = frontmatterData?.content || text;
 
     if (frontmatterData && (!processedText.trim() || processedText.trim() === text.trim())) {
-      processedText = ''; // Очищаем контент, чтобы избежать дублирования
+      processedText = '';
     }
 
     let frontmatterHtml = '';
