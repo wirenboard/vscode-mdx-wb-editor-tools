@@ -1,24 +1,20 @@
 {
   "version": "0.2.0",
   "configurations": [
+    
     {
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch",
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "name": "Extension Tests",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test"
+      "preLaunchTask": "npm: watch-bundle",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/out/**",
+        "!**/node_modules/**"
       ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"]
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }

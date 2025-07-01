@@ -160,7 +160,11 @@ export class MarkdownRenderer {
     documentUri: vscode.Uri
   ): string {
     const frontmatterData = this.parser.parseFrontmatter(text);
-    const processedText = frontmatterData?.content || text;
+    let processedText = frontmatterData?.content || text;
+
+    if (frontmatterData && (!processedText.trim() || processedText.trim() === text.trim())) {
+      processedText = ''; // Очищаем контент, чтобы избежать дублирования
+    }
 
     let frontmatterHtml = '';
     if (frontmatterData) {

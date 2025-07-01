@@ -3,15 +3,21 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "watch",
-      "problemMatcher": ["$tsc-watch"],
-      "isBackground": true,
-      "options": {
-        "cwd": "${workspaceFolder}"
+      "script": "watch-bundle",
+      "problemMatcher": {
+        "base": "$tsc-watch",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting compilation in watch mode...",
+          "endsPattern": "Found \\d+ errors?\\."
+        }
       },
-      "group": {
-        "kind": "build",
-        "isDefault": true
+      "isBackground": true,
+      "label": "npm: watch-bundle",  // Ключевое изменение - добавляем префикс npm:
+      "detail": "Запуск tsc и esbuild в watch-режиме",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
       }
     }
   ]
