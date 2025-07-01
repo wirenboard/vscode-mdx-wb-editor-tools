@@ -9,7 +9,7 @@ export class WBCompletionProvider implements vscode.CompletionItemProvider {
 
         const text = document.lineAt(position).text.slice(0, position.character);
         // триггер — ввод двоеточия и начало имени компонента
-        const m = text.match(/:([a-z0-9-]*)$/i);
+        const m = text.match(/^\s*:([a-z0-9-]*)$/i);
         if (!m) return undefined;
         const prefixTyped = m[1]; // то, что после двоеточия
 
