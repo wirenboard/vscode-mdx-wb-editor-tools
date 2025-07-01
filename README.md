@@ -51,7 +51,7 @@
 ### Запуск предпросмотра
 
 1. Откройте палитру команд (Ctrl+Shift+P)
-2. `>Mdx Preview: Show Preview`
+2. `>Show MDX WB Preview`
 
 ## Добавление кастомных рендеров
 
