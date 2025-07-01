@@ -3,7 +3,7 @@
   "publisher": "wirenboard",
   "displayName": "MDX Preview",
   "description": "Preview MDX-style markdown with components for Wiren Board",
-  "version": "1.0.8",
+  "version": "1.1.1",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -15,12 +15,14 @@
     "Visualization"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onLanguage:markdown"
   ],
   "main": "./out/extension.bundle.js",
   "scripts": {
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "watch": "tsc -watch -p ./ --preserveWatchOutput --listFiles",
+    "watch-bundle": "concurrently -n TSC,ESBUILD -c bgBlue.bold,bgGreen.bold \"npm run watch\" \"esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js --sourcemap --watch\"",
     "bundle": "esbuild out/extension.js --bundle --platform=node --external:vscode --outfile=out/extension.bundle.js",
     "vscode:prepublish": "npm run compile && npm run bundle",
     "package": "vsce package --no-dependencies -o dist/${npm_package_name}-${npm_package_version}.vsix",
@@ -32,21 +34,14 @@
     "@types/vscode": "^1.85.0",
     "@vscode/test-electron": "^2.3.2",
     "esbuild": "^0.25.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "concurrently": "^8.2.2"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
     "markdown-it": "^14.0.0"
   },
-  "files": [
-    "out/",
-    "media/",
-    "snippets/",
-    "templates/",
-    "LICENSE",
-    "README.md"
-  ],
   "contributes": {
     "commands": [
       {
@@ -58,6 +53,31 @@
       {
         "language": "markdown",
         "path": "./snippets/markdown.json"
+      },
+      {
+        "language": "markdown",
+        "path": "./snippets/components.json"
+      },
+      {
+        "language": "markdown",
+        "path": "./snippets/templates.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "markdown",
+        "embeddedLanguages": {
+          "meta.component.wb": "source.wb-components"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "scopeName": "text.md.wb-components",
+        "path": "./syntaxes/wb-components.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ]
       }
     ]
   }

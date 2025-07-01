@@ -1,0 +1,126 @@
+{
+    "WB Component Photo": {
+      "prefix": "wbs-comp-photo",
+      "body": [
+        ":photo{",
+        "  src=\"${1:URL}\"",
+        "  ${2:caption=\"\"}",
+        "  ${3:width=\"200px\"}",
+        "  ${4:float=\"${5|right,left,center|}\"}",
+        "}"
+      ],
+      "description": "Компонент фото. caption можно не указывать",
+      "docs": {
+        "attributes": {
+          "src": {
+            "description": "Путь к картинке (например, my_dir/my_photo.jpg)",
+            "default": ""
+          },
+          "caption": {
+            "description": "Подпись к изображению",
+            "default": ""
+          },
+          "width": {
+            "description": "Ширина изображения (например, \"200px\", \"50%\", \"auto\")",
+            "default": "200px"
+          },
+          "float": {
+            "description": "Выравнивание изображения",
+            "default": "right",
+            "values": ["left", "center", "right"]
+          }
+        }
+      }
+    },
+    "WB Component Gallery": {
+      "prefix": "wbs-comp-gallery",
+      "body": [
+        ":gallery{",
+        "  :data='[",
+        "    [\"${1:URL}\", \"${2:Подпись}\"],",
+        "    [\"${3:URL}\", \"${4:Подпись}\"],",
+        "    [\"${5:URL}\", \"${6:Подпись}\"],",
+        "    [\"${7:URL}\", \"${8:Подпись}\"],",
+        "    [\"${9:URL}\", \"${10:Подпись}\"],",
+        "    [\"${11:URL}\", \"${12:Подпись}\"],",
+        "    [\"${13:URL}\", \"${14:Подпись}\"],",
+        "    [\"${15:URL}\", \"${16:Подпись}\"],",
+        "    [\"${17:URL}\", \"${18:Подпись}\"],",
+        "    [\"${19:URL}\", \"${20:Подпись}\"]$0",
+        "  ]'",
+        "}"
+      ],
+      "description": "Галерея изображений. Подпись можно не указывать.",
+      "docs": {
+        "attributes": {
+          "data": {
+            "description": "JSON-массив данных для галереи",
+            "default": ""
+          }
+        }
+      }
+    },
+    "WB Component Video Player": {
+      "prefix": "wbs-comp-video-player",
+      "body": [
+        ":video-player{",
+        "  url=\"${1:URL}\"",
+        "  ${2:width=\"500px\"}",
+        "  ${3:height=\"280px\"}",
+        "  ${4:float=\"${5|left,right|}\"}",
+        "  ${5:cover=\"\"}",
+        "}"
+      ],
+      "description": "Компонент видеоплеера.",
+      "docs": {
+        "attributes": {
+          "url": {
+            "description": "Ссылка на видео",
+            "default": ""
+          },
+          "width": {
+            "description": "Ширина плеера (например, \"500px\", \"50%\", \"auto\")",
+            "default": "500px"
+          },
+          "height": {
+            "description": "Высота плеера (например, \"500px\", \"50%\", \"auto\")",
+            "default": "280px"            
+          },
+          "float": {
+            "description": "Выравнивание плеера",
+            "default": "left",
+            "values": ["left", "right", "center"]
+          },
+          "cover": {
+            "description": "Путь к обложке видео (например, my_dir/my_cover.jpg). Если не указать, то подгрузится сам ролик.",
+            "default": ""
+          }
+        }
+      }
+    },
+    "WB Component Video Gallery": {
+      "prefix": "wbs-comp-video-gallery",
+      "body": [
+        ":video-gallery{",
+        "  :data='[",
+        "    [\"${1:URL}\", \"${2:Подпись}\", \"${3:Обложка}\"],",
+        "    [\"${4:URL}\", \"${5:Подпись}\", \"${6:Обложка}\"],",
+        "    [\"${7:URL}\", \"${8:Подпись}\", \"${9:Обложка}\"],",
+        "    [\"${10:URL}\", \"${11:Подпись}\", \"${12:Обложка}\"],",
+        "    [\"${13:URL}\", \"${14:Подпись}\", \"${15:Обложка}\"],",
+        "    [\"${16:URL}\", \"${17:Подпись}\", \"${18:Обложка}\"]$0",
+        "  ]'",
+        "}"
+      ],
+      "description": "Видеогалерея. Подпись можно не указывать.",
+      "docs": {
+        "attributes": {
+          "data": {
+            "description": "JSON-массив данных для видеогалереи",
+            "default": "[]"
+          }
+        }
+      }
+    }
+  }
+  

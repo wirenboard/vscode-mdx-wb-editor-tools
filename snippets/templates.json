@@ -1,0 +1,234 @@
+{
+  "WB Article Template": {
+    "prefix": "wbs-md-article",
+    "body": [
+      "---",
+      "title: \"${1:Лаконичный заголовок}\"",
+      "cover: \"${2:my_article/my_article.jpg}\"",
+      "date: \"${3:2023-11-15}\"",
+      "category: \"${4:educational}\"",
+      "author: \"${5:Команда Wiren Board}\"",
+      "---",
+      "",
+      "## ${6:Заголовок}",
+      "${7:Текст статьи}",
+      "",
+      "### ${8:Подзаголовок}",
+      "${9:Дополнительный текст}",
+      "",
+      "## ${10:Заголовок}",
+      "${11:Текст статьи}",
+      "",
+      "### ${12:Подзаголовок}",
+      "${13:Дополнительный текст}"
+    ],
+    "description": "Шаблон статьи с ссылками и структурой из 2 разделов",
+    "docs": {
+      "path": "articles/**",
+      "attributes": {
+        "title": {
+          "description": "Заголовок статьи"
+        },
+        "url": {
+          "description": "URL к статье на внешнем ресурсе"
+        },
+        "cover": {
+          "description": "Путь к обложке статьи (например, my_article/my_article.jpg)"
+        },
+        "date": {
+          "description": "Дата публикации (YYYY-MM-DD, например, 2023-01-21)"
+        },
+        "category": {
+          "description": "Категория статьи, брать отсюда: https://github.com/wirenboard/website/blob/main/common/article_categories.ts"
+        },
+        "author": {
+          "description": "Автор статьи. Можно не указывать."
+        }
+      }
+    }
+  },
+  "WB Article Link Template": {
+    "prefix": "wbs-md-article-link",
+    "body": [
+      "---",
+      "title: \"${1:Заголовок}\"",
+      "cover: \"${2:my_article/my_article.jpg}\"",
+      "date: \"${3:2023-11-15}\"",
+      "category: \"${4:educational}\"",
+      "---"
+    ],
+    "description": "Укороченный шаблон статьи (без author)",
+    "docs": {}
+  },
+  "WB Solution Template": {
+    "prefix": "wbs-md-solution",
+    "body": [
+      "---",
+      "title: \"${1:Заголовок}\"",
+      "cover: \"${2:my_solution/my_solution.jpg}\"",
+      "date: \"${3:2024-01-21}\"",
+      "category: \"${4:shops_restaurants_monitoring}\"",
+      "---",
+      "",
+      "[Список категорий для решений](../../../common/solution_categories.ts)",
+      "[Справочник по синтаксису](../../../doc/syntax.md)",
+      "",
+      "## ${5:О компании}",
+      "${6:Описание компании}"
+    ],
+    "description": "Шаблон решения (аналог статьи)",
+    "docs": {
+      "path": "solutions/**",
+      "attributes": {
+        "title": {
+          "description": "Заголовок решения"
+        },
+        "cover": {
+          "description": "Путь к обложке (например my_solution/my_solution.jpg)"
+        },
+        "date": {
+          "description": "Дата (YYYY-MM-DD, например 2023-01-21)",
+          "default": ""
+        },
+        "category": {
+          "description": "Категория решения, брать отсюда https://github.com/wirenboard/website/blob/main/common/solution_categories.ts",
+          "default": ""
+        }
+      }
+    }
+  },
+  "WB Integrator Template": {
+    "prefix": "wbs-md-integrator",
+    "body": [
+      "---",
+      "district: \"${1|volga,msk,spb,ural,siberia,far_east|}\"",
+      "tags: \"${2|smart_home,real_estate,automation,retail,data_center|}\"",
+      "coordinates: [${3:55.824274}, ${4:49.196404}]",
+      "title: \"${5:Название интегратора}\"",
+      "logo: \"${6:my_integrator/logo.png}\"",
+      "phone: \"${7:74993227329}\"",
+      "website: \"${8:https://example.com}\"",
+      "email: \"${9:contact@example.com}\"",
+      "priority: ${6:1}",
+      "---",
+      "",
+      "${10:Описание компании}"
+    ],
+    "description": "Шаблон интегратора",
+    "docs": {
+      "path": "integrators/**",
+      "attributes": {
+        "district": {
+          "description": "Регион интегратора",
+          "values": [
+            "volga",
+            "msk",
+            "spb",
+            "ural",
+            "siberia",
+            "far_east"
+          ]
+        },
+        "tags": {
+          "description": "Теги интегратора",
+          "values": [
+            "smart_home",
+            "real_estate",
+            "automation",
+            "retail",
+            "data_center"
+          ]
+        },
+        "coordinates": {
+          "description": "Координаты [lat, lon]"
+        },
+        "title": {
+          "description": "Название интегратора"
+        },
+        "logo": {
+          "description": "Путь до логотипа внутри папки рядом с md-файлом (например my_integrator/logo.webp), формат webp или png"
+        },
+        "phone": {
+          "description": "Телефонный номер без доп. символов и пробелов (например 74993227329). Если несколько — перечислять в массиве [74993227329, 74993227330]"
+        },
+        "website": {
+          "description": "Сайт, начинается с https://"
+        },
+        "email": {
+          "description": "Контактный e-mail"
+        },
+        "priority": {
+          "description": "Опциональное. Выставляет приоритет в сортировке (например 1 — будет выше чем 2). Если не указано, сортировка по алфавиту."
+        }
+      }
+    }
+  },
+  "WB Partner Template": {
+    "prefix": "wbs-md-partner",
+    "body": [
+      "---",
+      "title: \"${1:Название партнёра}\"",
+      "logo: \"${2:my_partner/logo.webp}\"",
+      "phone: ${3:[74993227329]}",
+      "website: \"${4:https://example.com}\"",
+      "email: \"${5:contact@example.com}\"",
+      "priority: ${6:1}",
+      "---",
+      "",
+      "${7:Описание партнёра}"
+    ],
+    "description": "Шаблон партнёра",
+    "docs": {
+      "path": "partners/**",
+      "attributes": {
+        "title": {
+          "description": "Название партнёра"
+        },
+        "logo": {
+          "description": "Путь до логотипа внутри папки рядом с md-файлом (например my_partner/logo.webp), формат webp или png"
+        },
+        "phone": {
+          "description": "Телефонный номер без доп. символов и пробелов (например 74993227329). Если несколько — перечислять в массиве [74993227329, 74993227330]"
+        },
+        "website": {
+          "description": "Сайт, начинается с https://"
+        },
+        "email": {
+          "description": "Контактный e-mail"
+        },
+        "priority": {
+          "description": "Опциональное. Выставляет приоритет в сортировке (например 1 — будет выше чем 2). Если не указано, сортировка по алфавиту."
+        }
+      }
+    }
+  },
+  "WB Page Template": {
+    "prefix": "wbs-md-page",
+    "body": [
+      "---",
+      "title: \"${1:Лаконичный заголовок}\"",
+      "---",
+      "",
+      "## ${6:Заголовок}",
+      "${7:Текст статьи}",
+      "",
+      "### ${8:Подзаголовок}",
+      "${9:Дополнительный текст}",
+      "",
+      "## ${10:Заголовок}",
+      "${11:Текст статьи}",
+      "",
+      "### ${12:Подзаголовок}",
+      "${13:Дополнительный текст}"
+    ],
+    "description": "Шаблон страницы с 2 разделами",
+    "docs": {
+      "path": "pages/**",
+      "attributes": {
+        "title": {
+          "description": "Заголовок страницы"
+        }
+      }
+    }
+  }  
+}
