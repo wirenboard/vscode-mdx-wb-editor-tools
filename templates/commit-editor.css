@@ -1,0 +1,9 @@
+.commit-editor {
+  padding: 15px;
+  font-family: var(--vscode-font-family);
+}
+.file-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+/* ... остальные стили ... */

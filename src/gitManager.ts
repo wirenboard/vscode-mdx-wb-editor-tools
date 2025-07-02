@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { simpleGit, SimpleGit, StatusResult } from 'simple-git';
+import { ResetMode, simpleGit, SimpleGit, StatusResult } from 'simple-git';
 import * as path from "path";
 import * as os from "os";
+import { CommitEditor } from './commitEditor'
 
 interface GitBranch {
     name: string;
@@ -12,10 +13,12 @@ interface GitBranch {
 export class GitManager {
   private readonly git: SimpleGit;
   private readonly statusBarItem: vscode.StatusBarItem;
+  private readonly commitEditor: CommitEditor;
 
   constructor(private context: vscode.ExtensionContext) {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     this.git = simpleGit(workspaceFolder?.uri.fsPath || process.cwd());
+    this.commitEditor = new CommitEditor(context);
 
     this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Left,
@@ -54,6 +57,12 @@ export class GitManager {
 
   private async switchBranch() {
     try {
+      const status = await this.git.status();
+      if (status.files.length > 0) {
+        const choice = await this.handleUncommittedChanges();
+        if (!choice) return;
+      }
+
       const { branches } = await this.git.branchLocal();
       const selected = await vscode.window.showQuickPick(
         Object.values(branches)
@@ -64,10 +73,42 @@ export class GitManager {
 
       if (selected) {
         await this.git.checkout(selected.label);
+        await this.syncBranch(selected.label);
         vscode.window.showInformationMessage(`Переключено на ветку ${selected.label}`);
       }
     } catch (err) {
       this.showError(err);
+    }
+  }
+
+  private async handleUncommittedChanges(): Promise<boolean> {
+    const choice = await vscode.window.showQuickPick([
+      { label: 'Сохранить в новую ветку', detail: 'Создаст временную ветку с изменениями' },
+      { label: 'Отменить изменения', detail: 'Удалит все незакоммиченные изменения' },
+      { label: 'Отмена', detail: 'Прервать операцию' }
+    ]);
+
+    switch(choice?.label) {
+      case 'Сохранить в новую ветку':
+        const branchName = await vscode.window.showInputBox({ prompt: 'Имя временной ветки' });
+        if (!branchName) return false;
+        await this.git.checkoutLocalBranch(branchName);
+        await this.git.add('.');
+        await this.git.commit('Auto-save changes');
+        return true;
+      case 'Отменить изменения':
+        await this.git.reset(ResetMode.HARD);
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private async syncBranch(branchName: string) {
+    try {
+      await this.git.fetch();
+      await this.git.pull('origin', branchName);
+    } catch {
     }
   }
 
@@ -129,7 +170,8 @@ export class GitManager {
       }
 
       await this.git.add(".");
-      const commitMessage = await this.showCommitEditor(status);
+      const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
+      const commitMessage = await this.commitEditor.showFromStatus(status, workspacePath);
       if (!commitMessage) {
         vscode.window.showInformationMessage("Коммит отменён");
         return;
@@ -143,108 +185,46 @@ export class GitManager {
     }
   }
 
-  private async showCommitEditor(status: StatusResult): Promise<string | undefined> {
-    const panel = vscode.window.createWebviewPanel(
-      'commitMessage',
-      'Commit Message',
-      vscode.ViewColumn.One,
-      { enableScripts: true }
-    );
-
-    return new Promise<string | undefined>((resolve) => {
-      panel.webview.html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { padding: 10px; }
-            textarea { width: 100%; height: 200px; margin-bottom: 10px; }
-            button { padding: 5px 10px; }
-          </style>
-        </head>
-        <body>
-          <h3>Changed files:</h3>
-          <ul>
-            ${status.files.map(f => `<li>${f.path}</li>`).join('')}
-          </ul>
-          <textarea id="message" placeholder="Enter commit message"></textarea>
-          <div>
-            <button id="submit">Commit</button>
-            <button id="cancel">Cancel</button>
-          </div>
-          <script>
-            const vscode = acquireVsCodeApi();
-            document.getElementById('submit').addEventListener('click', () => {
-              const message = document.getElementById('message').value;
-              if (message.trim()) {
-                vscode.postMessage({ command: 'submit', text: message });
-              }
-            });
-            document.getElementById('cancel').addEventListener('click', () => {
-              vscode.postMessage({ command: 'cancel' });
-            });
-          </script>
-        </body>
-        </html>
-      `;
-
-      panel.webview.onDidReceiveMessage(message => {
-        if (message.command === 'submit') {
-          resolve(message.text);
-          panel.dispose();
-        } else if (message.command === 'cancel') {
-          resolve(undefined);
-          panel.dispose();
-        }
-      });
-
-      panel.onDidDispose(() => {
-        resolve(undefined);
-      });
-    });
-  }
-
   private async cleanBranches() {
     try {
-      await this.git.fetch();
-      const { branches } = await this.git.branch(["-a"]);
-
+      await this.git.fetch(['--prune']);
+  
+      const localBranches = (await this.git.branchLocal()).branches;
+      const currentBranch = (await this.git.branch()).current;
+      
+      const remoteRefs = await this.git.raw(['ls-remote', '--heads', 'origin']);
       const remoteBranches = new Set(
-        Object.values(branches as Record<string, GitBranch>)
-          .filter(b => b.name.startsWith("remotes/"))
-          .map(b => b.name.replace(/^remotes\/[^\/]+\//, ''))
+        remoteRefs
+          .split('\n')
+          .filter(Boolean)
+          .map(line => line.split('\t')[1].replace('refs/heads/', ''))
       );
-
-      const worktrees = await this.git.raw(['worktree', 'list', '--porcelain']);
-      const protectedBranches = new Set(
-        worktrees.split('\n')
-          .filter(line => line.startsWith('branch '))
-          .map(line => line.replace('branch refs/heads/', ''))
-      );
-
-      const localBranches = Object.values(branches as Record<string, GitBranch>)
-        .filter((b: GitBranch) =>
-          !b.name.startsWith("remotes/") &&
-          b.name !== "main" &&
-          !remoteBranches.has(b.name) &&
-          !protectedBranches.has(b.name)
-        );
+  
+      const branchesToClean = Object.entries(localBranches)
+        .filter(([name]) =>
+          name !== currentBranch &&
+          name !== 'main' &&
+          !remoteBranches.has(name))
+        .map(([name, branch]) => ({
+          name,
+          commit: branch.commit
+        }));
 
       const branchesToDelete = await vscode.window.showQuickPick(
-        localBranches.map((b) => ({
+        branchesToClean.map(b => ({
           label: b.name,
           description: b.commit.slice(0, 7),
-          detail: remoteBranches.has(b.name) ? "Есть на сервере" : undefined
+          detail: "Только локальная ветка"
         })),
         {
           canPickMany: true,
-          placeHolder: "Выберите локальные ветки (без удалённых аналогов) для удаления"
+          placeHolder: "Выберите локальные ветки для удаления"
         }
       );
-
+  
       if (branchesToDelete?.length) {
         await Promise.all(
-          branchesToDelete.map((b) => this.git.deleteLocalBranch(b.label, true))
+          branchesToDelete.map(b => this.git.deleteLocalBranch(b.label, true))
         );
         vscode.window.showInformationMessage(
           `Удалено веток: ${branchesToDelete.length}`
