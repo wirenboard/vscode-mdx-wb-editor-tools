@@ -1,26 +1,19 @@
 import * as vscode from 'vscode';
 import { WebviewManager } from './webviewManager';
-import * as fs from 'fs';
+import { TemplateManager } from './templateManager';
 import * as path from 'path';
 import Handlebars from 'handlebars';
 import { StatusResult } from 'simple-git';
 
 export class CommitEditor {
   private readonly webviewManager: WebviewManager;
-  private readonly template: Handlebars.TemplateDelegate;
+  private readonly templateManager: TemplateManager;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.webviewManager = new WebviewManager(context);
-    const htmlPath = path.join(context.extensionPath, 'templates/commit-editor.html');
-    const cssPath = path.join(context.extensionPath, 'templates/commit-editor.css');
-    
-    const html = fs.readFileSync(htmlPath, 'utf-8');
-    const css = fs.readFileSync(cssPath, 'utf-8');
-    
-    this.template = Handlebars.compile(html);
-    Handlebars.registerPartial('styles', css);
+    this.templateManager = new TemplateManager(context);
+    Handlebars.registerPartial('styles', this.templateManager.getTemplates().commitEditorStyles);
   }
-
   public initialize() {
     const commitEditorCommand = vscode.commands.registerCommand(
       'extension.showCommitEditor',
@@ -30,13 +23,7 @@ export class CommitEditor {
   }
 
   private async showCommitEditor() {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showErrorMessage('Нет активного редактора');
-      return;
-    }
-
-    this.webviewManager.showPreview();
+    this.webviewManager.showCustomForm('commitMessage');    
   }
 
   async show(status: vscode.SourceControlResourceState[]): Promise<string | undefined> {
@@ -50,20 +37,9 @@ export class CommitEditor {
       }
     );
 
-    const script = `
-      const vscode = acquireVsCodeApi();
-      document.getElementById('submit').addEventListener('click', () => {
-        const text = document.querySelector('textarea').value;
-        vscode.postMessage({ command: 'submit', text });
-      });
-      document.getElementById('cancel').addEventListener('click', () => {
-        vscode.postMessage({ command: 'cancel' });
-      });
-    `;
-
-    panel.webview.html = this.template({
+    panel.webview.html = this.templateManager.getTemplates().commitEditor({
       files: status.map(f => f.resourceUri.fsPath)
-    }).replace('</body>', `<script>${script}</script></body>`);
+    });
 
     return new Promise<string | undefined>((resolve) => {
       let resolved = false;

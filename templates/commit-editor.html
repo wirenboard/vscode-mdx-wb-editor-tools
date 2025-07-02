@@ -18,4 +18,14 @@
     </div>
   </div>
 </body>
+<script>
+      const vscode = acquireVsCodeApi();
+      document.getElementById('submit').addEventListener('click', () => {
+        const text = document.querySelector('textarea').value;
+        vscode.postMessage({ command: 'submit', text });
+      });
+      document.getElementById('cancel').addEventListener('click', () => {
+        vscode.postMessage({ command: 'cancel' });
+      });  
+</script>
 </html>

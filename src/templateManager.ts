@@ -14,6 +14,8 @@ export class TemplateManager {
     videoPlayer: Handlebars.TemplateDelegate;
     videoGallery: Handlebars.TemplateDelegate;
     frontmatter: Handlebars.TemplateDelegate;
+    commitEditor: Handlebars.TemplateDelegate;
+    commitEditorStyles: string;
   };
 
   constructor(context: vscode.ExtensionContext) {
@@ -31,7 +33,9 @@ export class TemplateManager {
       gallery: this.compileTemplate(path.join(templatesDir, 'gallery.html')),
       videoPlayer: this.compileTemplate(path.join(templatesDir, 'video-player.html')),
       videoGallery: this.compileTemplate(path.join(templatesDir, 'video-gallery.html')),
-      frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.html'))
+      frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.html')),
+      commitEditor: this.compileTemplate(path.join(templatesDir, 'commit-editor.html')),
+      commitEditorStyles: fs.readFileSync(path.join(templatesDir, 'commit-editor.css'), 'utf8')
     };
   }
 

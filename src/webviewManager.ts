@@ -29,6 +29,10 @@ export class WebviewManager {
     this.createPreviewPanel(editor.document);
   }
 
+  public showCustomForm(title: string) {
+    this.createBasicPreviewPanel(title);
+  }  
+
   private setupWebviewListeners() {
     this.context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument((document) => {
@@ -66,11 +70,11 @@ export class WebviewManager {
     this.context.subscriptions.push(cssWatcher);
   }
 
-  private createPreviewPanel(document: vscode.TextDocument) {
+  private createBasicPreviewPanel(title: string) {
     const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     this.previewPanel = vscode.window.createWebviewPanel(
       'mdxPreview',
-      `Preview: ${path.basename(document.fileName)}`,
+      `Preview: ${title}`,
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
@@ -85,7 +89,10 @@ export class WebviewManager {
       this.previewPanel = undefined;
       this.previewDocumentUri = undefined;
     });
+  }
 
+  private createPreviewPanel(document: vscode.TextDocument) {
+    this.createBasicPreviewPanel(path.basename(document.fileName));
     this.previewDocumentUri = document.uri;
     this.updateWebviewContentFromUri(document.uri);
   }
