@@ -7,7 +7,6 @@ import * as Handlebars from 'handlebars';
 const md = new MarkdownIt({ html: true });
 
 export class TemplateManager {
-  private mediaDir: string;
   private readonly templates: {
     main: Handlebars.TemplateDelegate;
     photo: Handlebars.TemplateDelegate;
@@ -20,7 +19,6 @@ export class TemplateManager {
 
   constructor(context: vscode.ExtensionContext) {
     const templatesDir = path.join(context.extensionPath, 'templates');
-    this.mediaDir = path.join(context.extensionPath, 'media');
 
     Handlebars.registerHelper('md', (text: string) => {
       return new Handlebars.SafeString(md.render(text));
@@ -43,9 +41,6 @@ export class TemplateManager {
     return Handlebars.compile(fs.readFileSync(path, 'utf8'));
   }
 
-  public getMediaDir(): string {
-    return this.mediaDir;
-  }
 
   public getTemplates() {
     return this.templates;

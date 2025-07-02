@@ -141,13 +141,10 @@ export class MarkdownRenderer {
     markdown: string,
     webview: vscode.Webview,
     documentUri: vscode.Uri,
-    context: vscode.ExtensionContext
+    templateStyles: string
   ): string {
     const processedMarkdown = this.preprocessMarkdown(markdown, webview, documentUri);
-    const styles = fs.readFileSync(
-      path.join(context.extensionPath, 'media', 'styles.css'),
-      'utf8'
-    );
+    const styles = templateStyles;
     return this.templateManager.getTemplates().main({
       styles,
       content: processedMarkdown
@@ -163,7 +160,7 @@ export class MarkdownRenderer {
     let processedText = frontmatterData?.content || text;
 
     if (frontmatterData && (!processedText.trim() || processedText.trim() === text.trim())) {
-      processedText = ''; // Очищаем контент, чтобы избежать дублирования
+      processedText = '';
     }
 
     let frontmatterHtml = '';

@@ -2,8 +2,6 @@ import * as vscode from 'vscode';
 import { WebviewManager } from './webviewManager';
 import { TemplateManager } from './templateManager';
 import * as path from 'path';
-import * as fs from 'fs';
-import Handlebars from 'handlebars';
 import { StatusResult } from 'simple-git';
 
 export class CommitEditor {
@@ -13,8 +11,6 @@ export class CommitEditor {
   constructor(private readonly context: vscode.ExtensionContext) {
     this.webviewManager = new WebviewManager(context);
     this.templateManager = new TemplateManager(context);
-    Handlebars.registerPartial('styles', fs.readFileSync(path.join(this.templateManager.getMediaDir(), 'commit-editor.css'), 'utf8'));
-    
   }
   public initialize() {
     const commitEditorCommand = vscode.commands.registerCommand(

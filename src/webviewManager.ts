@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { MarkdownRenderer } from './renderer';
 
 export class WebviewManager {
@@ -11,6 +12,18 @@ export class WebviewManager {
     this.renderer = new MarkdownRenderer(context);
     this.setupWebviewListeners();
   }
+
+    private loadStyles(context: vscode.ExtensionContext): string {
+      try {
+        return fs.readFileSync(
+          path.join(context.extensionPath, 'media', 'styles.css'),
+          'utf8'
+        );
+      } catch (error) {
+        console.error('Error loading styles:', error);
+        return '';
+      }
+    }
 
   public initialize() {
     const previewCommand = vscode.commands.registerCommand(
@@ -101,7 +114,7 @@ export class WebviewManager {
         document.getText(),
         this.previewPanel.webview,
         document.uri,
-        this.context
+        this.loadStyles(this.context)
       );
     } catch (error) {
       console.error('Preview update error:', error);
