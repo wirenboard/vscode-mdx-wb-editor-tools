@@ -2,12 +2,16 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh;  
 }
 
+body{
+  background-color: aliceblue;
+}
 .commit-message {
   flex: 1;
   margin-bottom: 10px;
+  
 }
 
 .commit-message textarea {

@@ -36,12 +36,8 @@ export class WebviewManager {
   private setupWebviewListeners() {
     this.context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument((document) => {
-        const stylePath = path.join(this.context.extensionPath, 'media', 'styles.css');
-        const isStyleChange = document.uri.fsPath === stylePath;
-        if (this.previewPanel && (isStyleChange || this.previewDocumentUri?.toString() === document.uri.toString())) {
-          this.updateWebviewContentFromUri(
-            isStyleChange ? this.previewDocumentUri : document.uri
-          );
+        if (this.previewPanel && this.previewDocumentUri?.toString() === document.uri.toString()) {
+          this.updateWebviewContentFromUri(document.uri);
         }
       })
     );
@@ -61,7 +57,7 @@ export class WebviewManager {
     const cssWatcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(
         path.join(this.context.extensionPath, 'media'),
-        'styles.css'
+        '*.css'
       )
     );
     cssWatcher.onDidChange(() => {

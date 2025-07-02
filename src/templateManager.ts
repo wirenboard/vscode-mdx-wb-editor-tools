@@ -7,6 +7,7 @@ import * as Handlebars from 'handlebars';
 const md = new MarkdownIt({ html: true });
 
 export class TemplateManager {
+  private mediaDir: string;
   private readonly templates: {
     main: Handlebars.TemplateDelegate;
     photo: Handlebars.TemplateDelegate;
@@ -15,11 +16,11 @@ export class TemplateManager {
     videoGallery: Handlebars.TemplateDelegate;
     frontmatter: Handlebars.TemplateDelegate;
     commitEditor: Handlebars.TemplateDelegate;
-    commitEditorStyles: string;
   };
 
   constructor(context: vscode.ExtensionContext) {
     const templatesDir = path.join(context.extensionPath, 'templates');
+    this.mediaDir = path.join(context.extensionPath, 'media');
 
     Handlebars.registerHelper('md', (text: string) => {
       return new Handlebars.SafeString(md.render(text));
@@ -34,8 +35,7 @@ export class TemplateManager {
       videoPlayer: this.compileTemplate(path.join(templatesDir, 'video-player.html')),
       videoGallery: this.compileTemplate(path.join(templatesDir, 'video-gallery.html')),
       frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.html')),
-      commitEditor: this.compileTemplate(path.join(templatesDir, 'commit-editor.html')),
-      commitEditorStyles: fs.readFileSync(path.join(templatesDir, 'commit-editor.css'), 'utf8')
+      commitEditor: this.compileTemplate(path.join(templatesDir, 'commit-editor.html'))
     };
   }
 
@@ -43,7 +43,11 @@ export class TemplateManager {
     return Handlebars.compile(fs.readFileSync(path, 'utf8'));
   }
 
-  getTemplates() {
+  public getMediaDir(): string {
+    return this.mediaDir;
+  }
+
+  public getTemplates() {
     return this.templates;
   }
 }
