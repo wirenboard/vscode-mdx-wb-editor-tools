@@ -20,7 +20,7 @@ export class WebviewManager {
     this.context.subscriptions.push(previewCommand);
   }
 
-  private showPreview() {
+  public showPreview() {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       vscode.window.showErrorMessage('Нет открытого MD-файла');

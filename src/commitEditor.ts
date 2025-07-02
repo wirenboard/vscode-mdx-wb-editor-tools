@@ -1,13 +1,16 @@
 import * as vscode from 'vscode';
+import { WebviewManager } from './webviewManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import Handlebars from 'handlebars';
 import { StatusResult } from 'simple-git';
 
 export class CommitEditor {
+  private readonly webviewManager: WebviewManager;
   private readonly template: Handlebars.TemplateDelegate;
 
-  constructor(private context: vscode.ExtensionContext) {
+  constructor(private readonly context: vscode.ExtensionContext) {
+    this.webviewManager = new WebviewManager(context);
     const htmlPath = path.join(context.extensionPath, 'templates/commit-editor.html');
     const cssPath = path.join(context.extensionPath, 'templates/commit-editor.css');
     
@@ -16,6 +19,24 @@ export class CommitEditor {
     
     this.template = Handlebars.compile(html);
     Handlebars.registerPartial('styles', css);
+  }
+
+  public initialize() {
+    const commitEditorCommand = vscode.commands.registerCommand(
+      'extension.showCommitEditor',
+      () => this.showCommitEditor()
+    );
+    this.context.subscriptions.push(commitEditorCommand);
+  }
+
+  private async showCommitEditor() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('Нет активного редактора');
+      return;
+    }
+
+    this.webviewManager.showPreview();
   }
 
   async show(status: vscode.SourceControlResourceState[]): Promise<string | undefined> {
