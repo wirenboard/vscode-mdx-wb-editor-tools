@@ -83,9 +83,11 @@ export class UpdateManager {
         await this.context.globalState.update('lastUpdateCheckTime', Date.now());
     }
     } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.log('Update skipped: host unavailable');
+      } else {
       console.error('Update check error:', err);
-      const message = err instanceof Error ? err.message : String(err);
-      vscode.window.showErrorMessage(`Failed to check for updates: ${message}`);
+  }
   }
   }
   
