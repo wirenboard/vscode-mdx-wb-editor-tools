@@ -3,6 +3,7 @@ import { WebviewManager } from './webviewManager';
 import { WBCompletionProvider } from './providers/wbCompletionProvider';
 import { WBHoverProvider } from './providers/wbHoverProvider';
 import { UpdateManager } from './updateManager';
+import { GitManager } from './gitManager';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -23,6 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
       new WBHoverProvider()
     )
   );
+
+  const gitManager = new GitManager(context);
+  context.subscriptions.push(gitManager);
 
   const updater = new UpdateManager(context);
   updater.checkForUpdates();

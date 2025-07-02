@@ -43,15 +43,55 @@
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
     "markdown-it": "^14.0.0",
-    "semver": "^7.7.2"
+    "semver": "^7.7.2",
+    "simple-git": "^3.19.1"
   },
   "contributes": {
     "commands": [
       {
         "command": "vscode-mdx-wb-editor-tools.showPreview",
         "title": "Show MDX WB Preview"
+      },
+      {
+        "command": "wirenboard.gitActions",
+        "title": "WB Git Actions",
+        "category": "Wiren Board"
+      },
+      {
+        "command": "wirenboard.gitShowPreview",
+        "title": "Show Preview",
+        "category": "Wiren Board"
+      },
+      {
+        "command": "wirenboard.gitSwitchToMain",
+        "title": "Switch to Main",
+        "category": "Wiren Board"
+      },
+      {
+        "command": "wirenboard.gitCreateBranch",
+        "title": "Create Branch",
+        "category": "Wiren Board"
+      },
+      {
+        "command": "wirenboard.gitPushChanges",
+        "title": "Push Changes",
+        "category": "Wiren Board"
+      },
+      {
+        "command": "wirenboard.gitCleanBranches",
+        "title": "Clean Branches",
+        "category": "Wiren Board"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "wirenboard.gitActions",
+          "group": "navigation",
+          "when": "view == workbench.view.scm"
+        }
+      ]
+    },
     "snippets": [
       {
         "language": "markdown",
