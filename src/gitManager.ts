@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { simpleGit, SimpleGit } from 'simple-git';
+import { simpleGit, SimpleGit, StatusResult } from 'simple-git';
 import * as path from "path";
 import * as os from "os";
 
@@ -31,60 +31,44 @@ export class GitManager {
 
   private registerCommands() {
     this.context.subscriptions.push(
-      vscode.commands.registerCommand("wirenboard.gitActions", () =>
-        this.showQuickPick()
-      ),
-      vscode.commands.registerCommand("wirenboard.gitShowPreview", () =>
-        this.showPreview()
-      ),
-      vscode.commands.registerCommand("wirenboard.gitSwitchToMain", () =>
-        this.switchToMain()
-      ),
-      vscode.commands.registerCommand("wirenboard.gitCreateBranch", () =>
-        this.createBranch()
-      ),
-      vscode.commands.registerCommand("wirenboard.gitPushChanges", () =>
-        this.pushChanges()
-      ),
-      vscode.commands.registerCommand("wirenboard.gitCleanBranches", () =>
-        this.cleanBranches()
-      )
+      vscode.commands.registerCommand("wirenboard.gitActions", () => this.showQuickPick()),
+      vscode.commands.registerCommand("wirenboard.gitSwitchBranch", () => this.switchBranch()),
+      vscode.commands.registerCommand("wirenboard.gitSwitchToMain", () => this.switchToMain()),
+      vscode.commands.registerCommand("wirenboard.gitCreateBranch", () => this.createBranch()),
+      vscode.commands.registerCommand("wirenboard.gitPushChanges", () => this.pushChanges()),
+      vscode.commands.registerCommand("wirenboard.gitCleanBranches", () => this.cleanBranches())
     );
   }
 
   private async showQuickPick() {
-    const choice = await vscode.window.showQuickPick([
-      {
-        label: "$(eye) Показать предпросмотр",
-        command: "wirenboard.gitShowPreview",
-      },
-      {
-        label: "$(git-branch) Переключиться на main",
-        command: "wirenboard.gitSwitchToMain",
-      },
-      {
-        label: "$(git-branch) Создать ветку",
-        command: "wirenboard.gitCreateBranch",
-      },
-      {
-        label: "$(cloud-upload) Отправить изменения",
-        command: "wirenboard.gitPushChanges",
-      },
-      {
-        label: "$(trashcan) Почистить локальные ветки",
-        command: "wirenboard.gitCleanBranches",
-      },
-    ]);
-
-    if (choice) {
-      await vscode.commands.executeCommand(choice.command);
-    }
+    const choices = [
+      { label: "$(git-branch) Переключить ветку", command: "wirenboard.gitSwitchBranch" },
+      { label: "$(git-branch) Переключиться на main", command: "wirenboard.gitSwitchToMain" },
+      { label: "$(git-branch) Создать ветку", command: "wirenboard.gitCreateBranch" },
+      { label: "$(cloud-upload) Отправить изменения", command: "wirenboard.gitPushChanges" },
+      { label: "$(trashcan) Почистить локальные ветки", command: "wirenboard.gitCleanBranches" }
+    ];
+    const choice = await vscode.window.showQuickPick(choices);
+    if (choice) await vscode.commands.executeCommand(choice.command);
   }
 
-  private async showPreview() {
-    await vscode.commands.executeCommand(
-      "vscode-mdx-wb-editor-tools.showPreview"
-    );
+  private async switchBranch() {
+    try {
+      const { branches } = await this.git.branchLocal();
+      const selected = await vscode.window.showQuickPick(
+        Object.values(branches)
+          .filter(b => !b.current)
+          .map(b => ({ label: b.name, description: b.commit.slice(0, 7) })),
+        { placeHolder: "Выберите ветку для переключения" }
+      );
+
+      if (selected) {
+        await this.git.checkout(selected.label);
+        vscode.window.showInformationMessage(`Переключено на ветку ${selected.label}`);
+      }
+    } catch (err) {
+      this.showError(err);
+    }
   }
 
   private async switchToMain() {
@@ -105,9 +89,7 @@ export class GitManager {
       await this.git.checkout("main");
       vscode.window.showInformationMessage("Переключено на ветку main");
     } catch (err) {
-      vscode.window.showErrorMessage(
-        `Ошибка: ${err instanceof Error ? err.message : String(err)}`
-      );
+      this.showError(err);
     }
   }
 
@@ -122,9 +104,7 @@ export class GitManager {
       await this.git.checkoutLocalBranch(branchName);
       vscode.window.showInformationMessage(`Создана ветка ${branchName}`);
     } catch (err) {
-      vscode.window.showErrorMessage(
-        `Ошибка: ${err instanceof Error ? err.message : String(err)}`
-      );
+      this.showError(err);
     }
   }
 
@@ -149,74 +129,7 @@ export class GitManager {
       }
 
       await this.git.add(".");
-
-      const tempUri = vscode.Uri.file(path.join(os.tmpdir(), `wb-commit-${Date.now()}.md`));
-      const template = [
-        "# Please enter the commit message for your changes.",
-        "# Lines starting with '#' will be ignored, and an empty message aborts the commit.",
-        "#",
-        "# Changes to be committed:",
-        ...status.files.map(f => `#\t${f.path}`),
-        "#"
-      ].join("\n");
-
-      await vscode.workspace.fs.writeFile(tempUri, Buffer.from(template));
-      const doc = await vscode.workspace.openTextDocument(tempUri);
-      const editor = await vscode.window.showTextDocument(doc, {
-        preview: false,
-        viewColumn: vscode.ViewColumn.One
-      });
-
-      await vscode.languages.setTextDocumentLanguage(doc, 'scminput');
-
-      const commitBtn = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-      commitBtn.text = "$(check) Commit";
-      commitBtn.command = "wirenboard.commitConfirm";
-      commitBtn.show();
-
-      const cancelBtn = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
-      cancelBtn.text = "$(close) Cancel";
-      cancelBtn.command = "wirenboard.commitCancel";
-      cancelBtn.show();
-
-      const commitMessage = await new Promise<string | undefined>(resolve => {
-        const disposables: vscode.Disposable[] = [];
-
-        const cleanup = async () => {
-            disposables.forEach(d => d.dispose());
-            commitBtn.dispose();
-            cancelBtn.dispose();
-            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-            try {
-              await vscode.workspace.fs.delete(tempUri);
-            } catch {}
-        };
-
-        disposables.push(
-          vscode.commands.registerCommand("wirenboard.commitConfirm", async () => {
-            const text = doc.getText();
-            const message = text.split('\n')
-              .filter(line => !line.trim().startsWith('#'))
-              .join('\n')
-              .trim();
-            await cleanup();
-            resolve(message || undefined);
-          }),
-
-          vscode.commands.registerCommand("wirenboard.commitCancel", async () => {
-            await cleanup();
-            resolve(undefined);
-          }),
-
-          vscode.window.onDidChangeVisibleTextEditors(async editors => {
-            if (!editors.includes(editor)) {
-              await cleanup();
-              resolve(undefined);
-            }
-          })
-      );
-      });
-
+      const commitMessage = await this.showCommitEditor(status);
       if (!commitMessage) {
         vscode.window.showInformationMessage("Коммит отменён");
         return;
@@ -224,11 +137,71 @@ export class GitManager {
 
       await this.git.commit(commitMessage);
       await this.git.push();
+      vscode.window.showInformationMessage("Изменения успешно отправлены");
     } catch (err) {
-      vscode.window.showErrorMessage(
-        `Ошибка: ${err instanceof Error ? err.message : String(err)}`
-      );
+      this.showError(err);
     }
+  }
+
+  private async showCommitEditor(status: StatusResult): Promise<string | undefined> {
+    const panel = vscode.window.createWebviewPanel(
+      'commitMessage',
+      'Commit Message',
+      vscode.ViewColumn.One,
+      { enableScripts: true }
+    );
+
+    return new Promise<string | undefined>((resolve) => {
+      panel.webview.html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { padding: 10px; }
+            textarea { width: 100%; height: 200px; margin-bottom: 10px; }
+            button { padding: 5px 10px; }
+          </style>
+        </head>
+        <body>
+          <h3>Changed files:</h3>
+          <ul>
+            ${status.files.map(f => `<li>${f.path}</li>`).join('')}
+          </ul>
+          <textarea id="message" placeholder="Enter commit message"></textarea>
+          <div>
+            <button id="submit">Commit</button>
+            <button id="cancel">Cancel</button>
+          </div>
+          <script>
+            const vscode = acquireVsCodeApi();
+            document.getElementById('submit').addEventListener('click', () => {
+              const message = document.getElementById('message').value;
+              if (message.trim()) {
+                vscode.postMessage({ command: 'submit', text: message });
+              }
+            });
+            document.getElementById('cancel').addEventListener('click', () => {
+              vscode.postMessage({ command: 'cancel' });
+            });
+          </script>
+        </body>
+        </html>
+      `;
+
+      panel.webview.onDidReceiveMessage(message => {
+        if (message.command === 'submit') {
+          resolve(message.text);
+          panel.dispose();
+        } else if (message.command === 'cancel') {
+          resolve(undefined);
+          panel.dispose();
+        }
+      });
+
+      panel.onDidDispose(() => {
+        resolve(undefined);
+      });
+    });
   }
 
   private async cleanBranches() {
@@ -278,10 +251,12 @@ export class GitManager {
         );
       }
     } catch (err) {
-      vscode.window.showErrorMessage(
-        `Ошибка: ${err instanceof Error ? err.message : String(err)}`
-      );
+      this.showError(err);
     }
+  }
+
+  private showError(err: unknown) {
+    vscode.window.showErrorMessage(`Ошибка: ${err instanceof Error ? err.message : String(err)}`);
   }
 
   dispose() {
