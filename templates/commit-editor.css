@@ -1,9 +1,35 @@
 .commit-editor {
-  padding: 15px;
-  font-family: var(--vscode-font-family);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
+
+.commit-message {
+  flex: 1;
+  margin-bottom: 10px;
+}
+
+.commit-message textarea {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  resize: none;
+}
+
 .file-list {
-  max-height: 200px;
+  max-height: 150px;
   overflow-y: auto;
+  margin-bottom: 10px;
 }
-/* ... остальные стили ... */
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+#submit, #cancel {
+  padding: 6px 12px;
+  cursor: pointer;
+}

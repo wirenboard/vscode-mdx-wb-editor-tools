@@ -29,9 +29,20 @@ export class CommitEditor {
       }
     );
 
+    const script = `
+      const vscode = acquireVsCodeApi();
+      document.getElementById('submit').addEventListener('click', () => {
+        const text = document.querySelector('textarea').value;
+        vscode.postMessage({ command: 'submit', text });
+      });
+      document.getElementById('cancel').addEventListener('click', () => {
+        vscode.postMessage({ command: 'cancel' });
+      });
+    `;
+
     panel.webview.html = this.template({
       files: status.map(f => f.resourceUri.fsPath)
-    });
+    }).replace('</body>', `<script>${script}</script></body>`);
 
     return new Promise<string | undefined>((resolve) => {
       let resolved = false;
@@ -63,11 +74,9 @@ export class CommitEditor {
     });
   }
 
-
   async showFromStatus(status: StatusResult, repoPath: string): Promise<string | undefined> {
     return this.show(
       status.files.map(f => ({
-
         resourceUri: vscode.Uri.file(path.join(repoPath, f.path))
       }))
     );

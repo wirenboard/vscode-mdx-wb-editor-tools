@@ -7,11 +7,11 @@
   <div class="commit-editor">
     <h3>Изменённые файлы</h3>
     <ul class="file-list">
-      {{#each files}}
-        <li>{{this}}</li>
-      {{/each}}
+      {{#each files}}<li>{{this}}</li>{{/each}}
     </ul>
-    <textarea placeholder="Сообщение коммита..."></textarea>
+    <div class="commit-message">
+      <textarea placeholder="Сообщение коммита..."></textarea>
+    </div>
     <div class="actions">
       <button id="submit">Commit</button>
       <button id="cancel">Cancel</button>
