@@ -81,6 +81,11 @@
         "command": "wirenboard.gitCleanBranches",
         "title": "Clean Branches",
         "category": "Wiren Board"
+      },
+      {
+        "command": "wirenboard.gitSyncBranch",
+        "title": "Sync Branch",
+        "category": "Wiren Board"
       }
     ],
     "menus": {
