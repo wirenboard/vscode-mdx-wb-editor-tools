@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { WebviewManager } from './webviewManager';
 import { WBCompletionProvider } from './providers/wbCompletionProvider';
 import { WBHoverProvider } from './providers/wbHoverProvider';
+import { UpdateManager } from './updateManager';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -9,13 +10,11 @@ export function activate(context: vscode.ExtensionContext) {
   webviewManager.initialize();
 
   context.subscriptions.push(
-    // автодополнение компонент/атрибутов
     vscode.languages.registerCompletionItemProvider(
       { language: 'markdown', scheme: 'file' },
       new WBCompletionProvider(),
-      ':' // триггер по двоеточию
+      ':' // Trigger by colon
     ),
-    // hover-подсказки для атрибутов и компонентов
     vscode.languages.registerHoverProvider(
       [
         { language: 'markdown', scheme: 'file' },
@@ -24,6 +23,9 @@ export function activate(context: vscode.ExtensionContext) {
       new WBHoverProvider()
     )
   );
+
+  const updater = new UpdateManager(context);
+  updater.checkForUpdates();
 }
 
 export function deactivate() { }
