@@ -4,12 +4,6 @@ import * as path from "path";
 import * as os from "os";
 import { CommitEditor } from "./commitEditor";
 
-interface GitBranch {
-  name: string;
-  commit: string;
-  current: boolean;
-}
-
 export class GitManager {
   private readonly git: SimpleGit;
   private readonly statusBarItem: vscode.StatusBarItem;
