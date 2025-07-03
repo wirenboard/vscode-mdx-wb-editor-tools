@@ -13,11 +13,30 @@ export class MarkdownRenderer {
   private readonly componentRenderers: Record<string, ComponentRenderer>;
   private readonly templateManager: TemplateManager;
   private readonly parser = new MarkdownParser();
+  private extensionContext: vscode.ExtensionContext
 
   constructor(context: vscode.ExtensionContext) {
-    this.templateManager = new TemplateManager(context);
-    this.componentRenderers = this.createComponentRenderers();
+    this.extensionContext = context
+    this.templateManager = new TemplateManager(this.extensionContext);
+    this.componentRenderers = this.createComponentRenderers();    
   }
+
+  private loadStyles(styleFileName: string): string {
+    const stylePath = path.join(
+      this.extensionContext.extensionPath,
+      'media',
+      styleFileName
+    );
+  
+    try {
+      return fs.existsSync(stylePath)
+        ? fs.readFileSync(stylePath, 'utf8')
+        : '/* Styles not found */';
+    } catch (error) {
+      console.error(`Failed to load styles from ${stylePath}:`, error);
+      return '/* Error loading styles */';
+    }
+  }  
 
   private resolveRelativePath(
     webview: vscode.Webview,
@@ -141,15 +160,21 @@ export class MarkdownRenderer {
     markdown: string,
     webview: vscode.Webview,
     documentUri: vscode.Uri,
-    templateStyles: string
+    styleFileName: string = 'styles.css'
   ): string {
-    const processedMarkdown = this.preprocessMarkdown(markdown, webview, documentUri);
-    const styles = templateStyles;
-    return this.templateManager.getTemplates().main({
-      styles,
-      content: processedMarkdown
-    });
+    const processed = this.preprocessMarkdown(markdown, webview, documentUri);
+    const styles = this.loadStyles(styleFileName);
+    return this.templateManager.getTemplates().main({ styles, content: processed });
   }
+
+  public renderForm(
+    templateName: keyof TemplateManager['templates'],
+    values: Record<string, any>,
+    styleFileName: string = 'styles.css'
+  ): string {
+    const styles = this.loadStyles(styleFileName);
+    return this.templateManager.getTemplates()[templateName]({ ...values, styles });
+  }  
 
   private preprocessMarkdown(
     text: string,

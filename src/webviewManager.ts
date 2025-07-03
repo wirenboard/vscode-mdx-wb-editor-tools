@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { MarkdownRenderer } from './renderer';
+import { TemplateManager } from './templateManager';
 
 export class WebviewManager {
   private previewPanel: vscode.WebviewPanel | undefined;
@@ -12,18 +13,6 @@ export class WebviewManager {
     this.renderer = new MarkdownRenderer(context);
     this.setupWebviewListeners();
   }
-
-    private loadStyles(context: vscode.ExtensionContext): string {
-      try {
-        return fs.readFileSync(
-          path.join(context.extensionPath, 'media', 'styles.css'),
-          'utf8'
-        );
-      } catch (error) {
-        console.error('Error loading styles:', error);
-        return '';
-      }
-    }
 
   public initialize() {
     const previewCommand = vscode.commands.registerCommand(
@@ -46,12 +35,45 @@ export class WebviewManager {
     this.createBasicPreviewPanel(title);
   }  
 
+  public createFormPanel<T = unknown>(options: {
+    title: string;
+    templateName: keyof TemplateManager['templates'];
+    values?: Record<string, any>;
+    styleFileName?: string;
+  }): {
+    panel: vscode.WebviewPanel;
+    onMessage: (handler: (message: T) => void) => void;
+  } {
+    const panel = vscode.window.createWebviewPanel(
+      'customForm',
+      options.title,
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true
+      }
+    );
+
+    panel.webview.html = this.renderer.renderForm(
+      options.templateName,
+      options.values || {},
+      options.styleFileName
+    );
+
+    return {
+      panel,
+      onMessage: (handler) => {
+        panel.webview.onDidReceiveMessage(handler);
+      }
+    };
+  }
+
   private setupWebviewListeners() {
     this.context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument((document) => {
         if (this.previewPanel && this.previewDocumentUri?.toString() === document.uri.toString()) {
-          this.updateWebviewContentFromUri(document.uri);
-        }
+    this.updateWebviewContentFromUri(document.uri);
+  }
       })
     );
 
@@ -105,7 +127,6 @@ export class WebviewManager {
     this.previewDocumentUri = document.uri;
     this.updateWebviewContentFromUri(document.uri);
   }
-
   private updateWebviewContent(document: vscode.TextDocument) {
     if (!this.previewPanel) return;
 
@@ -113,13 +134,12 @@ export class WebviewManager {
       this.previewPanel.webview.html = this.renderer.render(
         document.getText(),
         this.previewPanel.webview,
-        document.uri,
-        this.loadStyles(this.context)
+        document.uri
       );
     } catch (error) {
       console.error('Preview update error:', error);
-    }
   }
+}
 
   private updateWebviewContentFromUri(uri: vscode.Uri | undefined) {
     if (!uri) return;

@@ -1,16 +1,13 @@
 import * as vscode from 'vscode';
 import { WebviewManager } from './webviewManager';
-import { TemplateManager } from './templateManager';
 import * as path from 'path';
 import { StatusResult } from 'simple-git';
 
 export class CommitEditor {
   private readonly webviewManager: WebviewManager;
-  private readonly templateManager: TemplateManager;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.webviewManager = new WebviewManager(context);
-    this.templateManager = new TemplateManager(context);
   }
   public initialize() {
     const commitEditorCommand = vscode.commands.registerCommand(
@@ -24,24 +21,23 @@ export class CommitEditor {
     this.webviewManager.showCustomForm('commitMessage');    
   }
 
+  
   async show(status: vscode.SourceControlResourceState[]): Promise<string | undefined> {
-    const panel = vscode.window.createWebviewPanel(
-      'commitMessage',
-      'Commit Message',
-      vscode.ViewColumn.One,
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true
-      }
-    );
-
-    panel.webview.html = this.templateManager.getTemplates().commitEditor({
-      files: status.map(f => f.resourceUri.fsPath)
+    const { panel, onMessage } = this.webviewManager.createFormPanel<{
+      command: 'submit' | 'cancel';
+      text?: string;
+    }>({
+      title: 'Commit Message',
+      templateName: 'commitEditor',
+      values: {
+        files: status.map(f => f.resourceUri.fsPath)
+      },
+      styleFileName: 'commit-editor.css'
     });
-
+  
     return new Promise<string | undefined>((resolve) => {
       let resolved = false;
-
+  
       const complete = (result?: string) => {
         if (!resolved) {
           resolved = true;
@@ -49,8 +45,8 @@ export class CommitEditor {
           resolve(result);
         }
       };
-
-      panel.webview.onDidReceiveMessage(message => {
+  
+      onMessage(message => {
         switch(message.command) {
           case 'submit':
             if (message.text?.trim()) {
@@ -64,7 +60,7 @@ export class CommitEditor {
             break;
         }
       });
-
+  
       panel.onDidDispose(() => complete());
     });
   }
