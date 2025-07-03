@@ -98,9 +98,8 @@ export class GitManager {
       const [localBranches, remoteBranches] = await Promise.all([
         this.git.branchLocal(),
         this.git.branch(['-r'])
-      ]);
-  
-      const currentBranch = localBranches.current;
+      ]);  
+
       const allBranches = [
         ...Object.values(localBranches.branches)
           .filter(b => !b.current)
@@ -140,6 +139,7 @@ export class GitManager {
             // Если ветка локальная, но не отправлена — отправляем её
             await this.git.push('origin', selected.label);
             this.showMessage(`Ветка ${selected.label} отправлена на сервер`);
+            await this.git.status();
             await this.git.checkout(selected.label); // Повторяем переключение
           } else {
             throw err;
