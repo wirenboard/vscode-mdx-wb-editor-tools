@@ -8,6 +8,7 @@ export class WebviewManager {
   private previewPanel: vscode.WebviewPanel | undefined;
   private previewDocumentUri: vscode.Uri | undefined;
   private readonly renderer: MarkdownRenderer;
+  private activeForms = new Map<vscode.WebviewPanel, { templateName: keyof TemplateManager['templates'], values: Record<string, any>, styleFileName?: string }>();
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.renderer = new MarkdownRenderer(context);
@@ -54,12 +55,15 @@ export class WebviewManager {
       }
     );
 
-    panel.webview.html = this.renderer.renderForm(
-      options.templateName,
-      options.values || {},
-      options.styleFileName
-    );
+    this.activeForms.set(panel, {
+      templateName: options.templateName,
+      values: options.values || {},
+      styleFileName: options.styleFileName
+    });
 
+    panel.onDidDispose(() => this.activeForms.delete(panel));
+
+    this.updateFormContent(panel);
     return {
       panel,
       onMessage: (handler) => {
@@ -96,8 +100,15 @@ export class WebviewManager {
       )
     );
     cssWatcher.onDidChange(() => {
+      this.activeForms.forEach((params, panel) => {
+        try {
+          this.updateFormContent(panel);
+        } catch (error) {
+          console.error('Panel state check failed:', error);
+        }
+      });
       this.updateWebviewContentFromUri(this.previewDocumentUri);
-    });
+    });    
     this.context.subscriptions.push(cssWatcher);
   }
 
@@ -127,6 +138,7 @@ export class WebviewManager {
     this.previewDocumentUri = document.uri;
     this.updateWebviewContentFromUri(document.uri);
   }
+
   private updateWebviewContent(document: vscode.TextDocument) {
     if (!this.previewPanel) return;
 
@@ -147,4 +159,15 @@ export class WebviewManager {
       .openTextDocument(uri)
       .then(doc => this.updateWebviewContent(doc));
   }
+
+  private updateFormContent(panel: vscode.WebviewPanel) {
+    const formParams = this.activeForms.get(panel);
+    if (!formParams) return;
+
+    panel.webview.html = this.renderer.renderForm(
+      formParams.templateName,
+      formParams.values,
+      formParams.styleFileName
+    );
+}
 }
