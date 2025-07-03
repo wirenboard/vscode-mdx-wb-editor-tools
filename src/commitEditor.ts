@@ -23,6 +23,9 @@ export class CommitEditor {
 
   
   async show(status: vscode.SourceControlResourceState[]): Promise<string | undefined> {
+
+    const repoRoot = vscode.workspace.getWorkspaceFolder(status[0]?.resourceUri)?.uri.fsPath;
+    
     const { panel, onMessage } = this.webviewManager.createFormPanel<{
       command: 'submit' | 'cancel';
       text?: string;
@@ -30,7 +33,11 @@ export class CommitEditor {
       title: 'Commit Message',
       templateName: 'commitEditor',
       values: {
-        files: status.map(f => f.resourceUri.fsPath)
+        files: status.map(f => 
+          repoRoot 
+            ? path.relative(repoRoot, f.resourceUri.fsPath) 
+            : f.resourceUri.fsPath
+        )
       },
       styleFileName: 'commit-editor.css'
     });

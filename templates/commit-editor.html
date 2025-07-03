@@ -7,19 +7,21 @@
 </head>
 <body>
   <div class="commit-editor">
+    <h3>Что поменяли?</h3>
+    <div class="commit-message">
+      <textarea placeholder="Опишите сделанные изменения..." autofocus></textarea>
+    </div>
+    <div class="actions">
+      <button id="cancel">Отменить</button>
+      <button id="submit">Отправить</button>
+    </div>
+
     <h3>Изменённые файлы</h3>
     <ul class="file-list">
       {{#each files}}
         <li>{{this}}</li>
       {{/each}}
-    </ul>
-    <div class="commit-message">
-      <textarea placeholder="Сообщение коммита..." autofocus></textarea>
-    </div>
-    <div class="actions">
-      <button id="cancel">Cancel</button>
-      <button id="submit">Commit</button>
-    </div>
+    </ul>    
   </div>
 
   <script>
