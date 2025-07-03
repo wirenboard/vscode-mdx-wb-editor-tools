@@ -1,14 +1,21 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import { MarkdownRenderer } from './renderer';
-import { TemplateManager } from './templateManager';
+import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
+import { MarkdownRenderer } from "./renderer";
+import { TemplateManager } from "./templateManager";
 
 export class WebviewManager {
   private previewPanel: vscode.WebviewPanel | undefined;
   private previewDocumentUri: vscode.Uri | undefined;
   private readonly renderer: MarkdownRenderer;
-  private activeForms = new Map<vscode.WebviewPanel, { templateName: keyof TemplateManager['templates'], values: Record<string, any>, styleFileName?: string }>();
+  private activeForms = new Map<
+    vscode.WebviewPanel,
+    {
+      templateName: keyof TemplateManager["templates"];
+      values: Record<string, any>;
+      styleFileName?: string;
+    }
+  >();
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.renderer = new MarkdownRenderer(context);
@@ -17,7 +24,7 @@ export class WebviewManager {
 
   public initialize() {
     const previewCommand = vscode.commands.registerCommand(
-      'vscode-mdx-wb-editor-tools.showPreview',
+      "vscode-mdx-wb-editor-tools.showPreview",
       () => this.showPreview()
     );
     this.context.subscriptions.push(previewCommand);
@@ -26,7 +33,7 @@ export class WebviewManager {
   public showPreview() {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showErrorMessage('Нет открытого MD-файла');
+      vscode.window.showErrorMessage("Нет открытого MD-файла");
       return;
     }
     this.createPreviewPanel(editor.document);
@@ -34,11 +41,11 @@ export class WebviewManager {
 
   public showCustomForm(title: string) {
     this.createBasicPreviewPanel(title);
-  }  
+  }
 
   public createFormPanel<T = unknown>(options: {
     title: string;
-    templateName: keyof TemplateManager['templates'];
+    templateName: keyof TemplateManager["templates"];
     values?: Record<string, any>;
     styleFileName?: string;
   }): {
@@ -46,19 +53,19 @@ export class WebviewManager {
     onMessage: (handler: (message: T) => void) => void;
   } {
     const panel = vscode.window.createWebviewPanel(
-      'customForm',
+      "customForm",
       options.title,
       vscode.ViewColumn.One,
       {
         enableScripts: true,
-        retainContextWhenHidden: true
+        retainContextWhenHidden: true,
       }
     );
 
     this.activeForms.set(panel, {
       templateName: options.templateName,
       values: options.values || {},
-      styleFileName: options.styleFileName
+      styleFileName: options.styleFileName,
     });
 
     panel.onDidDispose(() => this.activeForms.delete(panel));
@@ -68,21 +75,24 @@ export class WebviewManager {
       panel,
       onMessage: (handler) => {
         panel.webview.onDidReceiveMessage(handler);
-      }
+      },
     };
   }
 
   private setupWebviewListeners() {
     this.context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument((document) => {
-        if (this.previewPanel && this.previewDocumentUri?.toString() === document.uri.toString()) {
-    this.updateWebviewContentFromUri(document.uri);
-  }
+        if (
+          this.previewPanel &&
+          this.previewDocumentUri?.toString() === document.uri.toString()
+        ) {
+          this.updateWebviewContentFromUri(document.uri);
+        }
       })
     );
 
     this.context.subscriptions.push(
-      vscode.window.onDidChangeActiveTextEditor(editor => {
+      vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor && this.previewPanel) {
           const doc = editor.document;
           this.previewDocumentUri = doc.uri;
@@ -95,8 +105,8 @@ export class WebviewManager {
 
     const cssWatcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(
-        path.join(this.context.extensionPath, 'media'),
-        '*.css'
+        path.join(this.context.extensionPath, "media"),
+        "*.css"
       )
     );
     cssWatcher.onDidChange(() => {
@@ -104,29 +114,40 @@ export class WebviewManager {
         try {
           this.updateFormContent(panel);
         } catch (error) {
-          console.error('Panel state check failed:', error);
+          console.error("Panel state check failed:", error);
         }
       });
       this.updateWebviewContentFromUri(this.previewDocumentUri);
-    });    
+    });
     this.context.subscriptions.push(cssWatcher);
   }
 
   private createBasicPreviewPanel(title: string) {
     const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+
     this.previewPanel = vscode.window.createWebviewPanel(
-      'mdxPreview',
+      "mdxPreview",
       `Preview: ${title}`,
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       {
         enableScripts: true,
-        localResourceRoots: [
-          vscode.Uri.file(path.join(ws ?? '', 'public')),
-          vscode.Uri.file(path.join(ws ?? '', 'content'))
-        ]
+        localResourceRoots: (() => {
+          const roots = [
+            vscode.Uri.file(path.join(ws ?? "", "public")),
+            vscode.Uri.file(path.join(ws ?? "", "content")),
+            vscode.Uri.file(path.join(this.context.extensionPath, "media")),
+          ];
+          if (process.platform === "darwin" && this.previewDocumentUri) {
+            roots.push(
+              vscode.Uri.file("/"),
+              vscode.Uri.file(path.dirname(this.previewDocumentUri.fsPath))
+            );
+          }
+          return roots;
+        })(),
       }
     );
-
+    // Восстанавливаем onDidDispose
     this.previewPanel.onDidDispose(() => {
       this.previewPanel = undefined;
       this.previewDocumentUri = undefined;
@@ -149,15 +170,15 @@ export class WebviewManager {
         document.uri
       );
     } catch (error) {
-      console.error('Preview update error:', error);
+      console.error("Preview update error:", error);
+    }
   }
-}
 
   private updateWebviewContentFromUri(uri: vscode.Uri | undefined) {
     if (!uri) return;
     vscode.workspace
       .openTextDocument(uri)
-      .then(doc => this.updateWebviewContent(doc));
+      .then((doc) => this.updateWebviewContent(doc));
   }
 
   private updateFormContent(panel: vscode.WebviewPanel) {
@@ -169,5 +190,5 @@ export class WebviewManager {
       formParams.values,
       formParams.styleFileName
     );
-}
+  }
 }
