@@ -298,14 +298,9 @@ export class GitManager {
     
     const choice = await vscode.window.showWarningMessage(
       `Ветка ${branchName} была изменена на сервере. Сначала синхронизируйте изменения.`,
-      "Открыть ветку в браузере",
       "Синхронизировать"
     );
   
-    if (choice === "Открыть ветку в браузере") {
-      await this.openBranchInBrowser(branchUrl);
-      throw new Error("Требуется синхронизация изменений");
-    }
     if (choice === "Синхронизировать") {
       await this.syncCurrentBranch();
       throw new Error("Повторите отправку после синхронизации");
