@@ -1,31 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+  <meta charset="UTF-8">
+  <title>Commit Editor</title>
   <style>{{styles}}</style>
 </head>
 <body>
   <div class="commit-editor">
     <h3>Изменённые файлы</h3>
     <ul class="file-list">
-      {{#each files}}<li>{{this}}</li>{{/each}}
+      {{#each files}}
+        <li>{{this}}</li>
+      {{/each}}
     </ul>
     <div class="commit-message">
-      <textarea placeholder="Сообщение коммита..."></textarea>
+      <textarea placeholder="Сообщение коммита..." autofocus></textarea>
     </div>
     <div class="actions">
-      <button id="submit">Commit</button>
       <button id="cancel">Cancel</button>
+      <button id="submit">Commit</button>
     </div>
   </div>
+
+  <script>
+    const vscode = acquireVsCodeApi();
+    document.getElementById('submit').addEventListener('click', () => {
+      const text = document.querySelector('textarea').value;
+      vscode.postMessage({ command: 'submit', text });
+    });
+    document.getElementById('cancel').addEventListener('click', () => {
+      vscode.postMessage({ command: 'cancel' });
+    });
+  </script>
 </body>
-<script>
-      const vscode = acquireVsCodeApi();
-      document.getElementById('submit').addEventListener('click', () => {
-        const text = document.querySelector('textarea').value;
-        vscode.postMessage({ command: 'submit', text });
-      });
-      document.getElementById('cancel').addEventListener('click', () => {
-        vscode.postMessage({ command: 'cancel' });
-      });  
-</script>
 </html>
