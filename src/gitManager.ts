@@ -148,11 +148,22 @@ export class GitManager {
     }
   }
 
-  private async syncBranch(branchName: string) {
+  private async syncBranch(branchName: string): Promise<boolean> {
     try {
       await this.git.fetch();
-      await this.git.pull("origin", branchName);
-    } catch {}
+      const pullOutput = await this.git.raw(["pull", "origin", branchName]); // Получаем сырой вывод
+  
+      if (pullOutput.includes("CONFLICT")) {
+        vscode.window.showErrorMessage(
+          `Конфликты слияния в ветке ${branchName}! Исправьте их вручную.`
+        );
+        return false;
+      }
+      return true;
+    } catch (err) {
+      this.showError(err);
+      return false;
+    }
   }
 
   private async switchToMain() {
@@ -212,6 +223,8 @@ export class GitManager {
         currentBranch = branchName;
       }
 
+      await this.syncBranch(currentBranch);
+      
       await this.git.add(".");
       const workspacePath =
         vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
