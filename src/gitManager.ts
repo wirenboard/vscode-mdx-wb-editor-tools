@@ -129,10 +129,21 @@ export class GitManager {
   
       if (selected) {
         this.updateStatus(`Переключение на ${selected.label}...`);
-        if (selected.isRemote) {
-          await this.git.checkout(['-b', selected.label, `origin/${selected.label}`]);
-        } else {
-          await this.git.checkout(selected.label);
+        try {
+          if (selected.isRemote) {
+            await this.git.checkout(['-b', selected.label, `origin/${selected.label}`]);
+          } else {
+            await this.git.checkout(selected.label);
+          }
+        } catch (err) {
+          if (err instanceof Error && err.message.includes("couldn't find remote ref")) {
+            // Если ветка локальная, но не отправлена — отправляем её
+            await this.git.push('origin', selected.label);
+            this.showMessage(`Ветка ${selected.label} отправлена на сервер`);
+            await this.git.checkout(selected.label); // Повторяем переключение
+          } else {
+            throw err;
+          }
         }
         await this.syncBranch(selected.label);
         this.showMessage(`Переключено на ветку ${selected.label}`);
@@ -178,9 +189,18 @@ export class GitManager {
       this.updateStatus(`Синхронизация ${branchName}...`);
       await this.git.fetch();
 
+      // Проверяем существование удалённой ветки
+      const remoteBranches = await this.git.branch(['-r']);
+      if (!remoteBranches.all.includes(`origin/${branchName}`)) {
+        this.updateStatus(`Удалённая ветка ${branchName} не найдена, отправляем...`);
+        await this.git.push('origin', branchName);
+        await this.git.status();
+        return true;
+      }
+
       this.updateStatus(`Получение изменений для ${branchName}...`);
-      const pullOutput = await this.git.raw(["pull", "origin", branchName]); // Получаем сырой вывод
-  
+      const pullOutput = await this.git.raw(["pull", "origin", branchName]);
+
       if (pullOutput.includes("CONFLICT")) {
         this.showError(
           `Конфликты слияния в ветке ${branchName}! Исправьте их вручную.`
