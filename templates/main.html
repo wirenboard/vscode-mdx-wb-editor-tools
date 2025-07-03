@@ -6,6 +6,14 @@
   <style>{{styles}}</style>
 </head>
 <body>
-  {{md content}}
+
+  {{#if error}}
+    <div class="mdx-error">
+      <h3>Ошибка рендеринга</h3>
+      <p>{{error}}</p>
+    </div>
+  {{else}}
+    {{md content}}
+  {{/if}}
 </body>
 </html>

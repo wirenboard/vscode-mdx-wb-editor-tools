@@ -26,23 +26,50 @@ export class MarkdownRenderer {
   ): string {
     if (!relativePath) return '';
 
-    if (/^\/?img\//.test(relativePath)) {
-      const assetPath = relativePath.replace(/^\/?img\//, '');
-      const wf = vscode.workspace.workspaceFolders?.[0];
-      if (!wf) {
-        console.error('No workspace folder to resolve /img path');
+    try {
+      const normalizedPath = relativePath.replace(/\\/g, '/');
+
+      const imgPathRegex = /^\/?img\//;
+      if (imgPathRegex.test(normalizedPath)) {
+        const assetPath = normalizedPath.replace(imgPathRegex, '');
+        const wf = vscode.workspace.workspaceFolders?.[0];
+        if (!wf) {
+          console.error('No workspace folder to resolve /img path');
+          return '';
+        }
+        const absFs = path.join(
+          wf.uri.fsPath,
+          'public',
+          'img',
+          ...assetPath.split('/').filter(Boolean)
+        );
+        return this.createWebviewUri(webview, absFs);
+      }
+
+      const docDir = path.dirname(documentUri.fsPath);
+      const absFs = path.join(
+        docDir,
+        ...normalizedPath.split('/').filter(Boolean)
+      );
+      return this.createWebviewUri(webview, absFs);
+    } catch (error) {
+      console.error('Error resolving path:', error);
+      return '';
+    }
+  }
+
+  private createWebviewUri(webview: vscode.Webview, fsPath: string): string {
+    try {
+      if (!fs.existsSync(fsPath)) {
+        console.error('File not found:', fsPath);
         return '';
       }
-      const absFs = path.join(wf.uri.fsPath, 'public', 'img', assetPath);
-      const fileUri = vscode.Uri.file(absFs);
+      const fileUri = vscode.Uri.file(fsPath);
       return webview.asWebviewUri(fileUri).toString();
+    } catch (error) {
+      console.error('Error creating webview URI:', error);
+      return '';
     }
-
-    const docFs = documentUri.fsPath;
-    const docDir = path.dirname(docFs);
-    const absFs = path.join(docDir, relativePath);
-    const fileUri = vscode.Uri.file(absFs);
-    return webview.asWebviewUri(fileUri).toString();
   }
 
   private normalizeSize(value: string | undefined, fallback: string): string {
@@ -143,15 +170,24 @@ export class MarkdownRenderer {
     documentUri: vscode.Uri,
     context: vscode.ExtensionContext
   ): string {
+    try {
     const processedMarkdown = this.preprocessMarkdown(markdown, webview, documentUri);
-    const styles = fs.readFileSync(
-      path.join(context.extensionPath, 'media', 'styles.css'),
-      'utf8'
-    );
+      const stylesPath = path.join(context.extensionPath, 'media', 'styles.css');
+      const styles = fs.existsSync(stylesPath)
+        ? fs.readFileSync(stylesPath, 'utf8')
+        : '/* Styles not found */';
+
     return this.templateManager.getTemplates().main({
       styles,
       content: processedMarkdown
     });
+    } catch (error) {
+      console.error('Rendering error:', error);
+      return this.templateManager.getTemplates().main({
+        styles: '',
+        error: `Error: ${error instanceof Error ? error.message : String(error)}`
+      });
+  }
   }
 
   private preprocessMarkdown(
@@ -163,7 +199,7 @@ export class MarkdownRenderer {
     let processedText = frontmatterData?.content || text;
 
     if (frontmatterData && (!processedText.trim() || processedText.trim() === text.trim())) {
-      processedText = ''; // Очищаем контент, чтобы избежать дублирования
+      processedText = '';
     }
 
     let frontmatterHtml = '';
