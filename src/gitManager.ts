@@ -99,25 +99,49 @@ export class GitManager {
         const choice = await this.handleUncommittedChanges();
         if (!choice) return;
       }
-
+  
       this.updateStatus("Получение списка веток...");
-      const { branches } = await this.git.branchLocal();
-
-      this.updateStatus("Подготовка к переключению...");
-      const selected = await vscode.window.showQuickPick(
-        Object.values(branches)
-          .filter((b) => !b.current)
-          .map((b) => ({ label: b.name, description: b.commit.slice(0, 7) })),
-        { placeHolder: "Выберите ветку для переключения" }
-      );
-
+      const [localBranches, remoteBranches] = await Promise.all([
+        this.git.branchLocal(),
+        this.git.branch(['-r'])
+      ]);
+  
+      const currentBranch = localBranches.current;
+      const allBranches = [
+        ...Object.values(localBranches.branches)
+          .filter(b => !b.current)
+          .map(b => ({
+            label: b.name,
+            description: 'Локальная ветка',
+            detail: b.commit.slice(0, 7),
+            isRemote: false
+          })),
+        ...remoteBranches.all
+          .filter(name => !name.includes('HEAD ->'))
+          .map(name => name.replace('origin/', ''))
+          .filter(name => !localBranches.all.includes(name))
+          .map(name => ({
+            label: name,
+            description: 'Удалённая ветка',
+            detail: 'origin/' + name,
+            isRemote: true
+          }))
+      ];
+  
+      const selected = await vscode.window.showQuickPick(allBranches, {
+        placeHolder: "Выберите ветку для переключения",
+        matchOnDescription: true
+      });
+  
       if (selected) {
         this.updateStatus(`Переключение на ${selected.label}...`);
-        await this.git.checkout(selected.label);
+        if (selected.isRemote) {
+          await this.git.checkout(['-b', selected.label, `origin/${selected.label}`]);
+        } else {
+          await this.git.checkout(selected.label);
+        }
         await this.syncBranch(selected.label);
-        this.showMessage(
-          `Переключено на ветку ${selected.label}`
-        );
+        this.showMessage(`Переключено на ветку ${selected.label}`);
       }
     } catch (err) {
       this.showError(err);
@@ -337,10 +361,12 @@ export class GitManager {
   
       const currentBranch = (await this.git.branch()).current;
       const localBranches = (await this.git.branchLocal()).all;
+      
+      // Получаем список удалённых веток правильно
+      const remoteRefs = (await this.git.listRemote(["--heads"])).trim();
       const remoteBranches = new Set(
-        (await this.git.listRemote(["--heads"]))
-          .split("\n")
-          .map(ref => ref.replace("refs/heads/", ""))
+        remoteRefs.split("\n")
+          .map(ref => ref.replace(/.*?refs\/heads\//, ""))
       );
   
       const branchesToDelete = localBranches
@@ -358,8 +384,10 @@ export class GitManager {
       const selected = await vscode.window.showQuickPick(
         branchesToDelete.map(branch => ({
           label: branch,
-          description: "Только локальная ветка",
-          picked: true // Выбраны по умолчанию
+          description: remoteBranches.has(branch) 
+            ? "Есть на удалённом репозитории" 
+            : "Только локальная ветка",
+          picked: true
         })), {
           canPickMany: true,
           placeHolder: "Выберите ветки для удаления",
