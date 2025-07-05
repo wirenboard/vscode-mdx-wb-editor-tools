@@ -21,7 +21,8 @@ body {
   color: rgb(40, 39, 42);
 }
 
-.errors{
+.errors,
+.component-error{
   color: red;
 }
 
@@ -224,3 +225,4 @@ body {
   display: block;
   margin: 0 auto var(--grid-margin) auto;
 }
+

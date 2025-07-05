@@ -1,6 +1,6 @@
 interface ComponentBase {
-    componentName: string;
-    originalText: string;
+  componentName: string;
+  originalText: string;
   error?: string;
 }
 
@@ -19,37 +19,45 @@ export type Component = InlineComponent | BlockComponent;
 type ParseResult = Array<string | Component>;
 
 export class MarkdownParser {
-  parseFrontmatter(text: string): { content: string; attributes: Record<string, string> } | null {
+  parseFrontmatter(
+    text: string
+  ): { content: string; attributes: Record<string, string> } | null {
     const frontmatterMatch = text.match(/^---\s*\n([\s\S]*?)\n---(\s*\n)?/);
     if (!frontmatterMatch) return null;
 
     const attributes: Record<string, string> = {};
     const frontmatterContent = frontmatterMatch[1];
 
-    for (const line of frontmatterContent.split('\n')) {
+    for (const line of frontmatterContent.split("\n")) {
       const match = line.match(/^(\w+):\s*(.*)/);
       if (match) {
         const [, key, value] = match;
-        attributes[key] = value.replace(/^['"](.*)['"]$/, '$1').trim();
+        attributes[key] = value.replace(/^['"](.*)['"]$/, "$1").trim();
       }
     }
 
     return {
       content: text.slice(frontmatterMatch[0].length),
-      attributes
+      attributes,
     };
   }
 
   parseComponentAttributes(inner: string): Record<string, string> {
     const attributes: Record<string, string> = {};
-    for (const match of inner.matchAll(/(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g)) {
+    for (const match of inner.matchAll(
+      /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s}]*))/g
+    )) {
       const [, key, doubleQuoted, singleQuoted, unquoted] = match;
       attributes[key] = (doubleQuoted ?? singleQuoted ?? unquoted).trim();
     }
     return attributes;
   }
 
-  private addTextToContext(text: string, context: ParseResult, stack: BlockComponent[]) {
+  private addTextToContext(
+    text: string,
+    context: ParseResult,
+    stack: BlockComponent[]
+  ) {
     if (stack.length > 0) {
       stack[stack.length - 1].children.push(text);
     } else {
@@ -57,7 +65,11 @@ export class MarkdownParser {
     }
   }
 
-  private addComponentToContext(component: InlineComponent | BlockComponent, context: ParseResult, stack: BlockComponent[]) {
+  private addComponentToContext(
+    component: InlineComponent | BlockComponent,
+    context: ParseResult,
+    stack: BlockComponent[]
+  ) {
     if (stack.length > 0) {
       stack[stack.length - 1].children.push(component);
     } else {
@@ -70,7 +82,7 @@ export class MarkdownParser {
       componentName: match[1],
       attributes: this.parseComponentAttributes(match[2]),
       originalText: match[0],
-      isBlock: false
+      isBlock: false,
     };
   }
 
@@ -80,27 +92,30 @@ export class MarkdownParser {
       attributes: match[2] ? this.parseComponentAttributes(match[2]) : {},
       originalText: match[0],
       isBlock: true,
-      children: []
+      children: [],
     };
   }
 
-  private getNextMatch(text: string, lastIndex: number): RegExpExecArray | null {
+  private getNextMatch(
+    text: string,
+    lastIndex: number
+  ): RegExpExecArray | null {
     const inlinePattern = /:([\w-]+)\{([\s\S]*?)\}/g;
     const blockPattern = /::(?!::)([\w-]+)(?:\{([\s\S]*?)\})?|\:\:/g; // Объединённый паттерн
-  
+
     inlinePattern.lastIndex = lastIndex;
     blockPattern.lastIndex = lastIndex;
-  
+
     const inlineMatch = inlinePattern.exec(text);
     const blockMatch = blockPattern.exec(text);
-  
+
     if (!inlineMatch && !blockMatch) return null;
     if (!inlineMatch) return blockMatch;
     if (!blockMatch) return inlineMatch;
-  
+
     return inlineMatch.index < blockMatch.index ? inlineMatch : blockMatch;
   }
-  
+
   private handleComponentStructure(
     componentName: string,
     originalText: string,
@@ -108,19 +123,25 @@ export class MarkdownParser {
     stack: BlockComponent[],
     components: ParseResult
   ) {
-      // обработка универсального закрывающего тега
-      if (originalText === '::') {
-        if (stack.length === 0) {
-          this.addErrorComponent('', originalText, components, stack);
-          return;
-        }
-        const lastName = stack[stack.length - 1].componentName;
-        if (!this.closeComponent(lastName, stack, components)) {
-          this.addErrorComponent(lastName, originalText, components, stack);
-        }
+    // обработка универсального закрывающего тега
+    if (originalText === "::") {
+      if (stack.length === 0) {
+        this.addErrorComponent("", originalText, components, stack);
         return;
       }
-          
+      const lastName = stack[stack.length - 1].componentName;
+      if (!this.closeComponent(lastName, stack, components)) {
+        this.addErrorComponent(lastName, originalText, components, stack);
+      }
+      return;
+    }
+
+    const attributesMatch = originalText.match(/\{(.*?)\}/);
+    let attributes = {};
+    if (attributesMatch) {
+      attributes = this.parseComponentAttributes(attributesMatch[1]);
+    }
+
     if (isClosing) {
       if (!this.closeComponent(componentName, stack, components)) {
         this.addErrorComponent(componentName, originalText, components, stack);
@@ -132,9 +153,19 @@ export class MarkdownParser {
         index: 0,
         input: originalText,
         groups: undefined,
-        length: 2
+        length: 2,
       } as unknown as RegExpExecArray;
-      stack.push(this.createBlockComponent(fakeMatch));
+
+      const component = this.createBlockComponent(fakeMatch);
+      if (originalText.includes("{")) {
+        const attributesMatch = originalText.match(/\{(.*?)\}/);
+        if (attributesMatch) {
+          component.attributes = this.parseComponentAttributes(
+            attributesMatch[1]
+          );
+        }
+      }
+      stack.push(component);
     }
   }
 
@@ -143,11 +174,12 @@ export class MarkdownParser {
     stack: BlockComponent[],
     components: ParseResult
   ): boolean {
-    const index = stack.findIndex(c => c.componentName === tagName);
+    const index = stack.findIndex((c) => c.componentName === tagName);
     if (index === -1) return false;
 
     const closedComponent = stack.splice(index, 1)[0];
-    const target = stack.length > 0 ? stack[stack.length - 1].children : components;
+    const target =
+      stack.length > 0 ? stack[stack.length - 1].children : components;
     target.push(closedComponent);
     return true;
   }
@@ -158,14 +190,18 @@ export class MarkdownParser {
     components: ParseResult,
     stack: BlockComponent[]
   ) {
-            this.addComponentToContext({
-      componentName: tagName,
-              attributes: {},
-      originalText,
-              isBlock: false,
-      error: `Неправильная структура: тег '${originalText}'`
-            }, components, stack);
-          }
+    this.addComponentToContext(
+      {
+        componentName: tagName,
+        attributes: {},
+        originalText,
+        isBlock: false,
+        error: `Неправильная структура: тег '${originalText}'`,
+      },
+      components,
+      stack
+    );
+  }
   parseComponents(text: string): ParseResult {
     const components: ParseResult = [];
     const stack: BlockComponent[] = [];
@@ -176,21 +212,40 @@ export class MarkdownParser {
       if (!match) break;
 
       if (match.index > lastIndex) {
-        this.addTextToContext(text.slice(lastIndex, match.index), components, stack);
-    }
+        this.addTextToContext(
+          text.slice(lastIndex, match.index),
+          components,
+          stack
+        );
+      }
 
-      if (match[0].startsWith('::')) {
-        const isClosing = match[0].endsWith('::');
-        this.handleComponentStructure(match[1], match[0], isClosing, stack, components);
+      if (match[0].startsWith("::")) {
+        const isClosing = match[0].endsWith("::");
+        this.handleComponentStructure(
+          match[1],
+          match[0],
+          isClosing,
+          stack,
+          components
+        );
       } else {
-        this.addComponentToContext(this.createInlineComponent(match), components, stack);
+        this.addComponentToContext(
+          this.createInlineComponent(match),
+          components,
+          stack
+        );
       }
 
       lastIndex = match.index + match[0].length;
     }
 
-    stack.reverse().forEach(unclosed => {
-      this.addErrorComponent(unclosed.componentName, unclosed.originalText, components, []);
+    stack.reverse().forEach((unclosed) => {
+      this.addErrorComponent(
+        unclosed.componentName,
+        unclosed.originalText,
+        components,
+        []
+      );
     });
     if (lastIndex < text.length) {
       this.addTextToContext(text.slice(lastIndex), components, stack);

@@ -222,15 +222,21 @@ export class MarkdownRenderer {
     const parsed = this.parser.parseComponents(text);
     let output = '';
   
-    const renderNode = (node: string | Component): string => {
+    const renderNode = (node: string | Component): string => {      
+
       if (typeof node === 'string') return node;
   
       if (node.error) {
         return `<div class="component-error">${node.error}</div>`;
       }
+
+      console.error('Node type:', typeof(node), '| Component name:', node.componentName);
   
       const renderer = this.componentRenderers[node.componentName];
-      if (!renderer) return node.originalText;
+      if (!renderer) {
+        console.error(`Renderer not found for component: ${node.componentName}`);
+        return `<div class="component-error">Renderer not found for component: ${node.componentName}</div>`;
+      }
   
       if (node.isBlock) {
         const blockNode = node as BlockComponent;
