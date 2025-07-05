@@ -161,6 +161,8 @@ export class MarkdownRenderer {
           error: null
         }) + '\n\n';
       },
+
+      //TODO: Сделать обработку children которая на уровне attributes
       product: (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().product({
           content: attrs.content || '',
