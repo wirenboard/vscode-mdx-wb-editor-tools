@@ -219,12 +219,19 @@ export class MarkdownRenderer {
     webview: vscode.Webview,
     documentUri: vscode.Uri
   ): string {
-    return text.replace(/:([\w-]+)\{([\s\S]*?)\}/g, (match, componentName, inner) => {
+    const components = this.parser.parseComponents(text);
+    let result = text;
+  
+    // Обрабатываем с конца для сохранения позиций
+    for (let i = components.length - 1; i >= 0; i--) {
+      const { componentName, attributes, originalText } = components[i];
       const renderer = this.componentRenderers[componentName];
-      if (!renderer) return match;
-
-      const attributes = this.parser.parseComponentAttributes(inner);
-      return renderer(attributes, webview, documentUri);
-    });
+      if (!renderer) continue;
+  
+      const rendered = renderer(attributes, webview, documentUri);
+      result = result.replace(originalText, rendered);
+    }
+  
+    return result;
   }
 }

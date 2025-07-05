@@ -28,4 +28,25 @@ export class MarkdownParser {
     }
     return attributes;
   }
+
+  parseComponents(text: string): Array<{
+    componentName: string;
+    attributes: Record<string, string>;
+    originalText: string;
+  }> {
+    const pattern = /:([\w-]+)\{([\s\S]*?)\}/g;
+    const components = [];
+    let match;
+
+    while ((match = pattern.exec(text)) !== null) {
+      const [, componentName, inner] = match;
+      components.push({
+        componentName,
+        attributes: this.parseComponentAttributes(inner),
+        originalText: match[0]
+      });
+    }
+
+    return components;
+  }
 }
