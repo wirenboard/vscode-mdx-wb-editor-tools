@@ -1,0 +1,242 @@
+[
+    {
+      componentName: "product",
+      attributes: {
+      },
+      originalText: "::product\n\n#description\n[Краткое описание датчика и его функций.]\n\n\n#info\n## Основные характеристики\n\n::product-section{title=\"Преимущества\"}\n:photo{\n  src=\"wb-msw-v4/advantages.png\"\n  float=\"right\"\n  width=\"500\"\n}\n- [Список преимуществ датчика.]\n::\n\n::product-section{title=\"Аппаратная часть\"}\n:photo{\n  src=\"wb-msw-v4/hardware.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание аппаратных характеристик и измеряемых параметров.]\n::\n\n::product-section{title=\"Управление ИК-командами\"}\n:photo{\n  src=\"wb-msw-v4/commands.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание функций ИК-приёмопередатчика.]\n::\n\n::product-section{title=\"Контроль уровня CO2\"}\n:photo{\n  src=\"wb-msw-v4/co2.jpg\"\n  float=\"right\"\n  width=\"500\"\n}\n[Краткое описание сенсора CO2.]\n::\n\n::product-section{title=\"Контроль VOC\"}\n:photo{\n  src=\"wb-msw-v4/voc.jpg\"\n  float=\"right\"\n  width=\"500\"\n}\n[Краткое описание сенсора VOC.]\n::\n\n::product-section{title=\"Поддержка Быстрого Modbus\"}\n:photo{\n  src=\"wb-msw-v4/modbus.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание возможностей Быстрого Modbus.]\n::\n\n::product-section{title=\"Контроль качества\"}\n:photo{\n  src=\"wb-msw-v4/quality.jpg\"\n  float=\"right\"\n  width=\"500\"\n}\n[Информация о контроле качества производства.]\n::\n\n::product-section{title=\"Настройка\"}\n:photo{\n  src=\"wb-msw-v4/settings.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание настроек датчика.]\n::\n\n::product-section{title=\"Чтение показаний\"}\n:photo{\n  src=\"wb-msw-v4/webui-device.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Информация о чтении данных и управлении.]\n::\n\n::product-section{title=\"Сертификаты\"}\n:photo{\n  src=\"wb-msw-v4/cert.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Сведения о сертификатах и поверке.]\n::\n\n::",
+      isBlock: true,
+      children: [
+        "\n\n#description\n[Краткое описание датчика и его функций.]\n\n\n#info\n## Основные характеристики\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Преимущества",
+          },
+          originalText: "::product-section{title=\"Преимущества\"}\n:photo{\n  src=\"wb-msw-v4/advantages.png\"\n  float=\"right\"\n  width=\"500\"\n}\n- [Список преимуществ датчика.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/advantages.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/advantages.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n- [Список преимуществ датчика.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Аппаратная часть",
+          },
+          originalText: "::product-section{title=\"Аппаратная часть\"}\n:photo{\n  src=\"wb-msw-v4/hardware.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание аппаратных характеристик и измеряемых параметров.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/hardware.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/hardware.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Описание аппаратных характеристик и измеряемых параметров.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Управление ИК-командами",
+          },
+          originalText: "::product-section{title=\"Управление ИК-командами\"}\n:photo{\n  src=\"wb-msw-v4/commands.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание функций ИК-приёмопередатчика.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/commands.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/commands.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Описание функций ИК-приёмопередатчика.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Контроль уровня CO2",
+          },
+          originalText: "::product-section{title=\"Контроль уровня CO2\"}\n:photo{\n  src=\"wb-msw-v4/co2.jpg\"\n  float=\"right\"\n  width=\"500\"\n}\n[Краткое описание сенсора CO2.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/co2.jpg",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/co2.jpg\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Краткое описание сенсора CO2.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Контроль VOC",
+          },
+          originalText: "::product-section{title=\"Контроль VOC\"}\n:photo{\n  src=\"wb-msw-v4/voc.jpg\"\n  float=\"right\"\n  width=\"500\"\n}\n[Краткое описание сенсора VOC.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/voc.jpg",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/voc.jpg\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Краткое описание сенсора VOC.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Поддержка Быстрого Modbus",
+          },
+          originalText: "::product-section{title=\"Поддержка Быстрого Modbus\"}\n:photo{\n  src=\"wb-msw-v4/modbus.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание возможностей Быстрого Modbus.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/modbus.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/modbus.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Описание возможностей Быстрого Modbus.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Контроль качества",
+          },
+          originalText: "::product-section{title=\"Контроль качества\"}\n:photo{\n  src=\"wb-msw-v4/quality.jpg\"\n  float=\"right\"\n  width=\"500\"\n}\n[Информация о контроле качества производства.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/quality.jpg",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/quality.jpg\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Информация о контроле качества производства.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Настройка",
+          },
+          originalText: "::product-section{title=\"Настройка\"}\n:photo{\n  src=\"wb-msw-v4/settings.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Описание настроек датчика.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/settings.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/settings.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Описание настроек датчика.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Чтение показаний",
+          },
+          originalText: "::product-section{title=\"Чтение показаний\"}\n:photo{\n  src=\"wb-msw-v4/webui-device.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Информация о чтении данных и управлении.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/webui-device.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/webui-device.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Информация о чтении данных и управлении.]\n",
+          ],
+        },
+        "\n\n",
+        {
+          componentName: "product-section",
+          attributes: {
+            title: "Сертификаты",
+          },
+          originalText: "::product-section{title=\"Сертификаты\"}\n:photo{\n  src=\"wb-msw-v4/cert.png\"\n  float=\"right\"\n  width=\"500\"\n}\n[Сведения о сертификатах и поверке.]\n::",
+          isBlock: true,
+          children: [
+            "\n",
+            {
+              componentName: "photo",
+              attributes: {
+                src: "wb-msw-v4/cert.png",
+                float: "right",
+                width: "500",
+              },
+              originalText: ":photo{\n  src=\"wb-msw-v4/cert.png\"\n  float=\"right\"\n  width=\"500\"\n}",
+              isBlock: false,
+            },
+            "\n[Сведения о сертификатах и поверке.]\n",
+          ],
+        },
+        "\n\n",
+      ],
+    },
+  ]

@@ -160,7 +160,21 @@ export class MarkdownRenderer {
           items,
           error: null
         }) + '\n\n';
-      }
+      },
+      product: (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().product({
+          content: attrs.content || '',
+          error: null
+        });
+      },
+
+      'product-section': (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().productSection({
+          title: attrs.title || '',
+          content: attrs.content || '',
+          error: null
+        });
+      }      
     };
   }
 
