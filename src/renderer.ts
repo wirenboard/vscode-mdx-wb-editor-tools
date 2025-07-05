@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { TemplateManager } from './templateManager';
-import { MarkdownParser } from './parser';
+import { MarkdownParser, Component, BlockComponent } from './parser';
 type ComponentRenderer = (
   attributes: Record<string, string>,
   webview: vscode.Webview,
@@ -219,19 +219,36 @@ export class MarkdownRenderer {
     webview: vscode.Webview,
     documentUri: vscode.Uri
   ): string {
-    const components = this.parser.parseComponents(text);
-    let result = text;
+    const parsed = this.parser.parseComponents(text);
+    let output = '';
   
-    // Обрабатываем с конца для сохранения позиций
-    for (let i = components.length - 1; i >= 0; i--) {
-      const { componentName, attributes, originalText } = components[i];
-      const renderer = this.componentRenderers[componentName];
-      if (!renderer) continue;
+    const renderNode = (node: string | Component): string => {
+      if (typeof node === 'string') return node;
   
-      const rendered = renderer(attributes, webview, documentUri);
-      result = result.replace(originalText, rendered);
+      if (node.error) {
+        return `<div class="component-error">${node.error}</div>`;
+      }
+  
+      const renderer = this.componentRenderers[node.componentName];
+      if (!renderer) return node.originalText;
+  
+      if (node.isBlock) {
+        const blockNode = node as BlockComponent;
+        const childrenContent = blockNode.children.map(renderNode).join('');
+        return renderer(
+          { ...blockNode.attributes, content: childrenContent },
+          webview,
+          documentUri
+        );
+      }
+  
+      return renderer(node.attributes, webview, documentUri);
+    };
+  
+    for (const node of parsed) {
+      output += renderNode(node);
     }
   
-    return result;
+    return output;
   }
 }
