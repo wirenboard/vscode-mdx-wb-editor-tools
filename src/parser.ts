@@ -1,6 +1,6 @@
 export class MarkdownParser {
   parseFrontmatter(text: string): { content: string; attributes: Record<string, string> } | null {
-    const frontmatterMatch = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+    const frontmatterMatch = text.match(/^---\s*\n([\s\S]*?)\n---(\s*\n)?/);
     if (!frontmatterMatch) return null;
 
     const attributes: Record<string, string> = {};
