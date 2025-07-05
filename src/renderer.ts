@@ -240,7 +240,20 @@ export class MarkdownRenderer {
   
       if (node.isBlock) {
         const blockNode = node as BlockComponent;
-        const childrenContent = blockNode.children.map(renderNode).join('');
+        const childrenContent = blockNode.children.map(child => {
+          // Если child — текст, возвращаем без изменений
+          if (typeof child === 'string') {
+            return child;
+          }
+          // Если child — компонент, рендерим его
+          const childRenderer = this.componentRenderers[child.componentName];
+          if (!childRenderer) {
+            console.error(`Renderer not found for child: ${child.componentName}`);
+            return `<div class="component-error">No renderer for: ${child.componentName}</div>`;
+          }
+          return childRenderer(child.attributes, webview, documentUri);
+        }).join('');
+        // Рендерим родительский компонент с содержимым (childrenContent)
         return renderer(
           { ...blockNode.attributes, content: childrenContent },
           webview,

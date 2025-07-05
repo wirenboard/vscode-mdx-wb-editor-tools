@@ -2,6 +2,8 @@ interface ComponentBase {
   componentName: string;
   originalText: string;
   error?: string;
+  isBlock: boolean;
+  children?: Array<string | Component>;
 }
 
 interface InlineComponent extends ComponentBase {
@@ -203,54 +205,45 @@ export class MarkdownParser {
     );
   }
   parseComponents(text: string): ParseResult {
-    const components: ParseResult = [];
-    const stack: BlockComponent[] = [];
+    const result: ParseResult = [];
+    const stack: Array<{component: BlockComponent, startIndex: number}> = [];
     let lastIndex = 0;
 
-    while (lastIndex < text.length) {
+    while (true) {
       const match = this.getNextMatch(text, lastIndex);
       if (!match) break;
 
+      // Добавляем текст между компонентами
       if (match.index > lastIndex) {
-        this.addTextToContext(
-          text.slice(lastIndex, match.index),
-          components,
-          stack
-        );
+        this.addTextToContext(text.slice(lastIndex, match.index), result, stack.map(s => s.component));
       }
 
-      if (match[0].startsWith("::")) {
-        const isClosing = match[0].endsWith("::");
-        this.handleComponentStructure(
-          match[1],
-          match[0],
-          isClosing,
-          stack,
-          components
-        );
-      } else {
-        this.addComponentToContext(
-          this.createInlineComponent(match),
-          components,
-          stack
-        );
+      if (match[0] === '::') { // Закрывающий тег
+        if (stack.length > 0) {
+          const {component, startIndex} = stack.pop()!;
+          component.originalText = text.slice(startIndex, match.index + 2); // +2 для '::'
+          this.addComponentToContext(component, result, stack.map(s => s.component));
+        }
+      } else { // Открывающий тег
+        const component = match[0].startsWith('::') 
+          ? this.createBlockComponent(match)
+          : this.createInlineComponent(match);
+        
+        if (component.isBlock) {
+          stack.push({component: component as BlockComponent, startIndex: match.index});
+        } else {
+          this.addComponentToContext(component, result, stack.map(s => s.component));
+        }
       }
 
       lastIndex = match.index + match[0].length;
     }
 
-    stack.reverse().forEach((unclosed) => {
-      this.addErrorComponent(
-        unclosed.componentName,
-        unclosed.originalText,
-        components,
-        []
-      );
-    });
+    // Добавляем оставшийся текст
     if (lastIndex < text.length) {
-      this.addTextToContext(text.slice(lastIndex), components, stack);
+      this.addTextToContext(text.slice(lastIndex), result, stack.map(s => s.component));
     }
 
-    return components;
+    return result;
   }
 }
