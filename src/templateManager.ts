@@ -16,6 +16,8 @@ export class TemplateManager {
     frontmatter: Handlebars.TemplateDelegate;
     product: Handlebars.TemplateDelegate;
     productSection: Handlebars.TemplateDelegate;
+    description: Handlebars.TemplateDelegate;
+    info: Handlebars.TemplateDelegate;
   };
 
   constructor(context: vscode.ExtensionContext) {
@@ -35,7 +37,9 @@ export class TemplateManager {
       videoGallery: this.compileTemplate(path.join(templatesDir, 'video-gallery.hbs')),
       frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.hbs')),
       product: this.compileTemplate(path.join(templatesDir, 'product.hbs')),
-      productSection: this.compileTemplate(path.join(templatesDir, 'product-section.hbs'))
+      productSection: this.compileTemplate(path.join(templatesDir, 'product-section.hbs')),
+      description: this.compileTemplate(path.join(templatesDir, 'description.hbs')),
+      info: this.compileTemplate(path.join(templatesDir, 'info.hbs'))
     };
   }
 

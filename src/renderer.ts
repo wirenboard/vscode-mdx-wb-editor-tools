@@ -194,6 +194,19 @@ export class MarkdownRenderer {
           error: null,
         });
       },
+      description: (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().description({
+          content: attrs.content || "",
+          error: null,
+        });
+      },
+  
+      info: (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().info({
+          content: attrs.content || "",
+          error: null,
+        });
+      },      
     };
   }
 

@@ -110,29 +110,41 @@ export class MarkdownParser {
     };
   }
 
+  private createHashBlockComponent(match: RegExpExecArray): BlockComponent {
+    const componentName = match[1].replace(/^\n/, '');
+    return {
+      componentName,
+      attributes: {},
+      isBlock: true,
+      children: [],
+    };
+  }
+
   private getNextMatch(
     text: string,
     lastIndex: number
   ): RegExpExecArray | null {
     const inlinePattern = /:([\w-]+)\{([\s\S]*?)\}/g;
     const blockPattern = /::(?!::)([\w-]+)(?:\{([\s\S]*?)\})?|\:\:/g;
+    const hashBlockPattern = /(?:^|\n)#([\w-]+)(?:\s|$)/g;
 
     inlinePattern.lastIndex = lastIndex;
     blockPattern.lastIndex = lastIndex;
+    hashBlockPattern.lastIndex = lastIndex;
 
     const inlineMatch = inlinePattern.exec(text);
     const blockMatch = blockPattern.exec(text);
+    const hashBlockMatch = hashBlockPattern.exec(text);
 
-    if (!inlineMatch && !blockMatch) return null;
-    if (!inlineMatch) return blockMatch;
-    if (!blockMatch) return inlineMatch;
+    const matches = [inlineMatch, blockMatch, hashBlockMatch]
+      .filter(Boolean)
+      .sort((a, b) => a!.index - b!.index);
 
-    return inlineMatch.index < blockMatch.index ? inlineMatch : blockMatch;
+    return matches[0] || null;
   }
-
   parseComponents(text: string): ParseResult {
     const result: ParseResult = [];
-    const stack: Array<{ component: BlockComponent; startIndex: number }> = [];
+    const stack: Array<{ component: BlockComponent; startIndex: number; isHashBlock: boolean }> = [];
     let lastIndex = 0;
 
     while (true) {
@@ -147,16 +159,33 @@ export class MarkdownParser {
         );
       }
 
-      if (match[0] === "::") {
-        if (stack.length > 0) {
-          const { component } = stack.pop()!;
+      if (match[0].startsWith("#") || match[0].includes("\n#")) {
+        const component = this.createHashBlockComponent(match);
+        if (stack.length > 0 && stack[stack.length - 1].isHashBlock) {
+          const { component: prevComponent } = stack.pop()!;
           this.addComponentToContext(
-            component,
+            prevComponent,
             result,
             stack.map((s) => s.component)
           );
         }
-      } else {
+          stack.push({
+            component,
+          startIndex: match.index,
+          isHashBlock: true,
+        });
+        }
+      else if (match[0] === "::") {
+        if (stack.length > 0 && !stack[stack.length - 1].isHashBlock) {
+          const { component } = stack.pop()!;
+          this.addComponentToContext(
+            component,
+        result,
+        stack.map((s) => s.component)
+      );
+    }
+  }
+      else {
         const component = match[0].startsWith("::")
           ? this.createBlockComponent(match)
           : this.createInlineComponent(match);
@@ -165,6 +194,7 @@ export class MarkdownParser {
           stack.push({
             component: component as BlockComponent,
             startIndex: match.index,
+            isHashBlock: false,
           });
         } else {
           this.addComponentToContext(
@@ -176,6 +206,15 @@ export class MarkdownParser {
       }
 
       lastIndex = match.index + match[0].length;
+    }
+
+    while (stack.length > 0) {
+      const { component } = stack.pop()!;
+      this.addComponentToContext(
+        component,
+        result,
+        stack.map((s) => s.component)
+      );
     }
 
     if (lastIndex < text.length) {
