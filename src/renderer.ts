@@ -175,7 +175,7 @@ export class MarkdownRenderer {
           content: attrs.content || '',
           error: null
         });
-      }      
+      }    
     };
   }
 
@@ -202,7 +202,7 @@ export class MarkdownRenderer {
         styles: '',
         error: `Error: ${error instanceof Error ? error.message : String(error)}`
       });
-  }
+    }
   }
 
   private preprocessMarkdown(
@@ -235,17 +235,26 @@ private processComponents(
   documentUri: vscode.Uri
 ): string {
   const parsed = this.parser.parseComponents(text);
-
   const wrapError = (error: string) => 
     `<div class="component-error">${error}</div>`;
 
   const renderChild = (child: string | Component): string => {
     if (typeof child === 'string') return child;
     
+      console.debug(`Processing child ${child.componentName}`, {
+        isBlock: child.isBlock,
+        attributes: child.attributes
+      });
+
     const renderer = this.componentRenderers[child.componentName];
     if (!renderer) {
       return wrapError(`Renderer not found for: ${child.componentName}`);
     }
+
+      if (child.isBlock) {
+        return renderBlockComponent(child as BlockComponent);
+      }
+
     return child.error 
       ? renderer({ error: child.error }, webview, documentUri)
       : renderer(child.attributes, webview, documentUri);
@@ -253,34 +262,32 @@ private processComponents(
 
   const renderBlockComponent = (node: BlockComponent): string => {
     const childrenContent = node.children.map(renderChild).join('');
-    const renderer = this.componentRenderers[node.componentName];
-    
-    if (!renderer) {
-      return wrapError(`Renderer not found for: ${node.componentName}`);
-    }
+    console.debug(`Rendering ${node.componentName} block with:`, {
+      title: node.attributes.title,
+      content: childrenContent
+    });
 
-      const attributes = {
+      return this.componentRenderers[node.componentName]({
         ...node.attributes,
         content: childrenContent
+      }, webview, documentUri);
   };
 
-      return renderer(attributes, webview, documentUri);
-    };
-    
     const renderComponent = (node: Component): string => {
       if (node.error) {
         return this.componentRenderers[node.componentName]?.({ error: node.error }, webview, documentUri)
           || wrapError(node.error);
       }
 
-      return node.isBlock
-        ? renderBlockComponent(node as BlockComponent)
-        : this.componentRenderers[node.componentName]?.(node.attributes, webview, documentUri)
+    if (node.isBlock) {
+      return renderBlockComponent(node as BlockComponent);
+    }
+    return this.componentRenderers[node.componentName]?.(node.attributes, webview, documentUri)
           || wrapError(`Renderer failed for: ${node.componentName}`);
   };
 
-  return parsed.map(node => 
-    typeof node === 'string' ? node : renderComponent(node)
-  ).join('');
+    return parsed.map(node =>
+      typeof node === 'string' ? node : renderComponent(node)
+    ).join('');
 }
 }
