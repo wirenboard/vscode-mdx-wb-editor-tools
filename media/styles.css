@@ -8,7 +8,7 @@
 }
 
 /* === Базовые стили === */
-html{
+html {
   zoom: 0.7;
 }
 body {
@@ -22,7 +22,7 @@ body {
 }
 
 .errors,
-.component-error{
+.component-error {
   color: red;
 }
 
@@ -34,14 +34,14 @@ body {
 
 /* === Общая сетка для галерей === */
 .gallery-base,
-.mdx-gallery{
+.mdx-gallery {
   --min-item-width: 220px;
   --gap: 8px;
   display: grid;
   gap: var(--gap);
   grid-template-columns: repeat(auto-fit, minmax(var(--min-item-width), 1fr));
   margin: auto;
-  max-width: calc(5 * var(--min-item-width) + 4 * var(--gap));  
+  max-width: calc(5 * var(--min-item-width) + 4 * var(--gap));
 }
 
 .mdx-video-gallery {
@@ -49,7 +49,7 @@ body {
   max-width: calc(3 * var(--min-item-width) + 4 * var(--gap));
 }
 
-/* ===  Общие стили для подписей === */
+/* === Общие стили для подписей === */
 .mdx-video-gallery-caption,
 .mdx-gallery-caption,
 .mdx-photo-caption {
@@ -58,11 +58,10 @@ body {
   font-size: .9em;
   font-style: italic;
   padding: 0 4px;
-  margin: 0 4px 0;  
+  margin: 0 4px 0;
 }
 
 /* === Фронтматтер === */
-
 .frontmatter-table {
   width: 100%;
   border-collapse: collapse;
@@ -90,7 +89,6 @@ body {
   object-fit: cover;
 }
 
-  
 /* === Фото: контейнер и картинка === */
 .mdx-photo {
   background: var(--item-color);
@@ -117,14 +115,14 @@ body {
 }
 .mdx-gallery-item > img {
   display: block;
-  width: 100%;  
+  width: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
 .mdx-video-gallery-item > img {
   display: block;
-  width: 100%;  
+  width: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -143,18 +141,17 @@ body {
 
 /* === Ваша структура: обёртка медиа === */
 .media-wrapper {
-  width: 100%;  
+  width: 100%;
   overflow: hidden;
   position: relative;
-  /* border: 1px solid var(--border-color); */
   border-radius: var(--border-radius);
 }
 
-.aspect-ratio-4-3{
+.aspect-ratio-4-3 {
   aspect-ratio: 4/3;
 }
 
-.aspect-ratio-16-9{
+.aspect-ratio-16-9 {
   aspect-ratio: 16/9;
 }
 
@@ -172,8 +169,11 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
-  background: var(--placeholder-bg);
+  
   transition: transform 0.3s ease;
+}
+.mdx-video-placeholder{
+  background: var(--placeholder-bg);
 }
 .media-wrapper:hover img {
   transform: scale(1.05);
@@ -226,10 +226,100 @@ body {
   margin: 0 auto var(--grid-margin) auto;
 }
 
-.frontmatter-images{
+.frontmatter-images {
   display: block;
 }
 
-.frontmatter-video{
+.frontmatter-video {
   display: block;
 }
+
+/* === Товары === */
+.description-component {
+  display: block;
+  padding: 5px;
+}
+
+.info-component {
+  display: block;
+  padding: 5px;
+}
+
+/* показываем “ярлык” с именем класса */
+.description-component,
+.info-component {
+  position: relative;
+}
+
+/* ярлык для description */
+.description-component::before {
+  content: ".description-component";
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(3, 47, 243, 0.8);
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-bottom-right-radius: 4px;
+  z-index: 10;
+}
+
+/* ярлык для info */
+.info-component::before {
+  content: ".info-component";
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(95, 14, 209, 0.8);
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-bottom-right-radius: 4px;
+  z-index: 10;
+}
+
+
+/* Корректная сетка секций с учётом float-элементов */
+.product-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-auto-rows: min-content;
+  gap: 16px;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.product-section {
+  display: flow-root;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+/* === Адаптация === */
+@media (max-width: 600px) {
+  /* 1) Сбрасываем float и делаем картинку во всю ширину */
+  .mdx-photo,
+  .float-right,
+  .float-left {
+    float: none !important;
+    width: 100%     !important;
+    margin: 0 0 var(--grid-margin) 0 !important;
+  }
+
+  /* 2) Убираем жёсткий aspect-ratio и overflow:hidden,
+        чтобы картинка не обрезалась и шла своим естественным размером */
+  .media-wrapper {
+    aspect-ratio: auto !important;
+    height: auto       !important;
+    overflow: visible  !important;
+  }
+
+  /* 3) Гарантируем, что img займёт всю ширину и пропорции сохранятся */
+  .media-wrapper img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+  }
+}
+

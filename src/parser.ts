@@ -74,10 +74,14 @@ export class MarkdownParser {
     context: ParseResult,
     stack: BlockComponent[]
   ) {
+    const processedText = stack.length > 0 && !text.startsWith('\n')
+      ? '\n' + text
+      : text;
+
     if (stack.length > 0) {
-      stack[stack.length - 1].children.push(text);
+      stack[stack.length - 1].children.push(processedText);
     } else {
-      context.push(text);
+      context.push(processedText);
     }
   }
 
@@ -87,6 +91,14 @@ export class MarkdownParser {
     stack: BlockComponent[]
   ) {
     if (stack.length > 0) {
+      if (stack[stack.length - 1].children.length > 0) {
+        const lastChild = stack[stack.length - 1].children[
+          stack[stack.length - 1].children.length - 1
+        ];
+        if (typeof lastChild === 'string' && !lastChild.endsWith('\n')) {
+          stack[stack.length - 1].children.push('\n');
+        }
+      }
       stack[stack.length - 1].children.push(component);
     } else {
       context.push(component);
@@ -155,9 +167,9 @@ export class MarkdownParser {
         this.addTextToContext(
           text.slice(lastIndex, match.index),
           result,
-          stack.map((s) => s.component)
-        );
-      }
+            stack.map((s) => s.component)
+          );
+        }
 
       if (match[0].startsWith("#") || match[0].includes("\n#")) {
         const component = this.createHashBlockComponent(match);
@@ -165,10 +177,10 @@ export class MarkdownParser {
           const { component: prevComponent } = stack.pop()!;
           this.addComponentToContext(
             prevComponent,
-            result,
-            stack.map((s) => s.component)
-          );
-        }
+        result,
+        stack.map((s) => s.component)
+      );
+    }
           stack.push({
             component,
           startIndex: match.index,
