@@ -162,7 +162,6 @@ export class MarkdownRenderer {
         }) + '\n\n';
       },
 
-      //TODO: Сделать обработку children которая на уровне attributes
       product: (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().product({
           content: attrs.content || '',
@@ -230,60 +229,58 @@ export class MarkdownRenderer {
     return frontmatterHtml + this.processComponents(processedText, webview, documentUri);
   }
 
-  private processComponents(
-    text: string,
-    webview: vscode.Webview,
-    documentUri: vscode.Uri
-  ): string {
-    const parsed = this.parser.parseComponents(text);
-    let output = '';
-  
-    const renderNode = (node: string | Component): string => {      
+private processComponents(
+  text: string,
+  webview: vscode.Webview,
+  documentUri: vscode.Uri
+): string {
+  const parsed = this.parser.parseComponents(text);
 
-      if (typeof node === 'string') return node;
-  
-      if (node.error) {
-        return `<div class="component-error">${node.error}</div>`;
-      }
+  const wrapError = (error: string) => 
+    `<div class="component-error">${error}</div>`;
 
-      console.error('Node type:', typeof(node), '| Component name:', node.componentName);
-  
-      const renderer = this.componentRenderers[node.componentName];
-      if (!renderer) {
-        console.error(`Renderer not found for component: ${node.componentName}`);
-        return `<div class="component-error">Renderer not found for component: ${node.componentName}</div>`;
-      }
-  
-      if (node.isBlock) {
-        const blockNode = node as BlockComponent;
-        const childrenContent = blockNode.children.map(child => {
-          // Если child — текст, возвращаем без изменений
-          if (typeof child === 'string') {
-            return child;
-          }
-          // Если child — компонент, рендерим его
-          const childRenderer = this.componentRenderers[child.componentName];
-          if (!childRenderer) {
-            console.error(`Renderer not found for child: ${child.componentName}`);
-            return `<div class="component-error">No renderer for: ${child.componentName}</div>`;
-          }
-          return childRenderer(child.attributes, webview, documentUri);
-        }).join('');
-        // Рендерим родительский компонент с содержимым (childrenContent)
-        return renderer(
-          { ...blockNode.attributes, content: childrenContent },
-          webview,
-          documentUri
-        );
-      }
-  
-      return renderer(node.attributes, webview, documentUri);
-    };
-  
-    for (const node of parsed) {
-      output += renderNode(node);
+  const renderChild = (child: string | Component): string => {
+    if (typeof child === 'string') return child;
+    
+    const renderer = this.componentRenderers[child.componentName];
+    if (!renderer) {
+      return wrapError(`Renderer not found for: ${child.componentName}`);
     }
-  
-    return output;
-  }
+    return child.error 
+      ? renderer({ error: child.error }, webview, documentUri)
+      : renderer(child.attributes, webview, documentUri);
+  };
+
+  const renderBlockComponent = (node: BlockComponent): string => {
+    const childrenContent = node.children.map(renderChild).join('');
+    const renderer = this.componentRenderers[node.componentName];
+    
+    if (!renderer) {
+      return wrapError(`Renderer not found for: ${node.componentName}`);
+    }
+
+      const attributes = {
+        ...node.attributes,
+        content: childrenContent
+  };
+
+      return renderer(attributes, webview, documentUri);
+    };
+    
+    const renderComponent = (node: Component): string => {
+      if (node.error) {
+        return this.componentRenderers[node.componentName]?.({ error: node.error }, webview, documentUri)
+          || wrapError(node.error);
+      }
+
+      return node.isBlock
+        ? renderBlockComponent(node as BlockComponent)
+        : this.componentRenderers[node.componentName]?.(node.attributes, webview, documentUri)
+          || wrapError(`Renderer failed for: ${node.componentName}`);
+  };
+
+  return parsed.map(node => 
+    typeof node === 'string' ? node : renderComponent(node)
+  ).join('');
+}
 }
