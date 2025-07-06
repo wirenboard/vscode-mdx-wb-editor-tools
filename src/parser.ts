@@ -29,13 +29,33 @@ export class MarkdownParser {
 
     const attributes: Record<string, string> = {};
     const frontmatterContent = frontmatterMatch[1];
+    let currentKey = '';
+    let currentValue = '';
 
     for (const line of frontmatterContent.split("\n")) {
-      const match = line.match(/^(\w+):\s*(.*)/);
-      if (match) {
-        const [, key, value] = match;
-        attributes[key] = value.replace(/^['"](.*)['"]$/, "$1").trim();
+      // Проверяем начало нового ключа
+      const keyMatch = line.match(/^(\w+):\s*(.*)/);
+      if (keyMatch) {
+        // Сохраняем предыдущий ключ, если есть
+        if (currentKey) {
+          attributes[currentKey] = currentValue.trim();
+        }
+        currentKey = keyMatch[1];
+        currentValue = keyMatch[2];
+      } else if (currentKey) {
+        // Продолжаем собирать значение для текущего ключа
+        currentValue += '\n' + line;
       }
+    }
+
+    // Сохраняем последний ключ
+    if (currentKey) {
+      attributes[currentKey] = currentValue.trim();
+    }
+
+    // Удаляем кавычки вокруг значений, если они есть
+    for (const key in attributes) {
+      attributes[key] = attributes[key].replace(/^['"](.*)['"]$/, '$1').trim();
     }
 
     return {
@@ -120,19 +140,19 @@ export class MarkdownParser {
 
   parseComponents(text: string): ParseResult {
     const result: ParseResult = [];
-    const stack: Array<{component: BlockComponent, startIndex: number}> = [];
+    const stack: Array<{ component: BlockComponent; startIndex: number }> = [];
     let lastIndex = 0;
-    const IGNORE_MARKERS = ['#description', '#info'];
+    const IGNORE_MARKERS = ["#description", "#info"];
 
     const cleanLine = (line: string) => {
       const trimmed = line.trim();
-      return IGNORE_MARKERS.some(marker => trimmed.startsWith(marker)) ? '' : line;
+      return IGNORE_MARKERS.some((marker) => trimmed.startsWith(marker))
+        ? ""
+        : line;
     };
 
     // Разбиваем текст на строки, чистим и собираем обратно
-    const cleanedText = text.split('\n')
-      .map(cleanLine)
-      .join('\n');
+    const cleanedText = text.split("\n").map(cleanLine).join("\n");
 
     while (true) {
       const match = this.getNextMatch(cleanedText, lastIndex);
@@ -140,24 +160,44 @@ export class MarkdownParser {
 
       // Добавляем текст между компонентами
       if (match.index > lastIndex) {
-        this.addTextToContext(cleanedText.slice(lastIndex, match.index), result, stack.map(s => s.component));
+        this.addTextToContext(
+          cleanedText.slice(lastIndex, match.index),
+          result,
+          stack.map((s) => s.component)
+        );
       }
 
-      if (match[0] === '::') { // Закрывающий тег
+      if (match[0] === "::") {
+        // Закрывающий тег
         if (stack.length > 0) {
-          const {component, startIndex} = stack.pop()!;
-          component.originalText = cleanedText.slice(startIndex, match.index + 2); // +2 для '::'
-          this.addComponentToContext(component, result, stack.map(s => s.component));
+          const { component, startIndex } = stack.pop()!;
+          component.originalText = cleanedText.slice(
+            startIndex,
+            match.index + 2
+          ); // +2 для '::'
+          this.addComponentToContext(
+            component,
+            result,
+            stack.map((s) => s.component)
+          );
         }
-      } else { // Открывающий тег
-        const component = match[0].startsWith('::')
+      } else {
+        // Открывающий тег
+        const component = match[0].startsWith("::")
           ? this.createBlockComponent(match)
           : this.createInlineComponent(match);
 
         if (component.isBlock) {
-          stack.push({component: component as BlockComponent, startIndex: match.index});
+          stack.push({
+            component: component as BlockComponent,
+            startIndex: match.index,
+          });
         } else {
-          this.addComponentToContext(component, result, stack.map(s => s.component));
+          this.addComponentToContext(
+            component,
+            result,
+            stack.map((s) => s.component)
+          );
         }
       }
 
@@ -166,10 +206,13 @@ export class MarkdownParser {
 
     // Добавляем оставшийся текст
     if (lastIndex < cleanedText.length) {
-      this.addTextToContext(text.slice(lastIndex), result, stack.map(s => s.component));
+      this.addTextToContext(
+        text.slice(lastIndex),
+        result,
+        stack.map((s) => s.component)
+      );
     }
 
     return result;
   }
-
 }
