@@ -226,3 +226,10 @@ body {
   margin: 0 auto var(--grid-margin) auto;
 }
 
+.frontmatter-images{
+  display: block;
+}
+
+.frontmatter-video{
+  display: block;
+}

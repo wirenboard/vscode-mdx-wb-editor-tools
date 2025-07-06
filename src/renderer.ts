@@ -1,8 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as vscode from 'vscode';
-import { TemplateManager } from './templateManager';
-import { MarkdownParser, Component, BlockComponent } from './parser';
+import * as fs from "fs";
+import * as path from "path";
+import * as vscode from "vscode";
+import { TemplateManager } from "./templateManager";
+import { MarkdownParser, Component, BlockComponent } from "./parser";
 type ComponentRenderer = (
   attributes: Record<string, string>,
   webview: vscode.Webview,
@@ -13,6 +13,9 @@ export class MarkdownRenderer {
   private readonly componentRenderers: Record<string, ComponentRenderer>;
   private readonly templateManager: TemplateManager;
   private readonly parser = new MarkdownParser();
+  private wrapError(error: string): string {
+    return `<div class="component-error">${error}</div>`;
+  }
 
   constructor(context: vscode.ExtensionContext) {
     this.templateManager = new TemplateManager(context);
@@ -24,24 +27,24 @@ export class MarkdownRenderer {
     documentUri: vscode.Uri,
     relativePath: string
   ): string {
-    if (!relativePath) return '';
+    if (!relativePath) return "";
 
     try {
-      const normalizedPath = relativePath.replace(/\\/g, '/');
+      const normalizedPath = relativePath.replace(/\\/g, "/");
 
       const imgPathRegex = /^\/?img\//;
       if (imgPathRegex.test(normalizedPath)) {
-        const assetPath = normalizedPath.replace(imgPathRegex, '');
+        const assetPath = normalizedPath.replace(imgPathRegex, "");
         const wf = vscode.workspace.workspaceFolders?.[0];
         if (!wf) {
-          console.error('No workspace folder to resolve /img path');
-          return '';
+          console.error("No workspace folder to resolve /img path");
+          return "";
         }
         const absFs = path.join(
           wf.uri.fsPath,
-          'public',
-          'img',
-          ...assetPath.split('/').filter(Boolean)
+          "public",
+          "img",
+          ...assetPath.split("/").filter(Boolean)
         );
         return this.createWebviewUri(webview, absFs);
       }
@@ -49,26 +52,26 @@ export class MarkdownRenderer {
       const docDir = path.dirname(documentUri.fsPath);
       const absFs = path.join(
         docDir,
-        ...normalizedPath.split('/').filter(Boolean)
+        ...normalizedPath.split("/").filter(Boolean)
       );
       return this.createWebviewUri(webview, absFs);
     } catch (error) {
-      console.error('Error resolving path:', error);
-      return '';
+      console.error("Error resolving path:", error);
+      return "";
     }
   }
 
   private createWebviewUri(webview: vscode.Webview, fsPath: string): string {
     try {
       if (!fs.existsSync(fsPath)) {
-        console.error('File not found:', fsPath);
-        return '';
+        console.error("File not found:", fsPath);
+        return "";
       }
       const fileUri = vscode.Uri.file(fsPath);
       return webview.asWebviewUri(fileUri).toString();
     } catch (error) {
-      console.error('Error creating webview URI:', error);
-      return '';
+      console.error("Error creating webview URI:", error);
+      return "";
     }
   }
 
@@ -83,99 +86,114 @@ export class MarkdownRenderer {
       photo: (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().photo({
           src: this.resolveRelativePath(webview, docUri, attrs.src),
-          alt: attrs.alt || '',
+          alt: attrs.alt || "",
           caption: attrs.caption,
-          width: this.normalizeSize(attrs.width, '100%'),
-          floatClass: attrs.float ? `float-${attrs.float}` : '',
-          error: null
+          width: this.normalizeSize(attrs.width, "100%"),
+          floatClass: attrs.float ? `float-${attrs.float}` : "",
+          error: null,
         });
       },
 
       gallery: (attrs, webview, docUri) => {
         try {
-          const rawImages = JSON.parse(attrs.data || '[]');
+          console.debug("Gallery component attrs", attrs);
+          const rawImages = JSON.parse(attrs.data || "[]");
           const images = rawImages.map(([src, alt]: [string, string]) => ({
             src: this.resolveRelativePath(webview, docUri, src),
-            alt: alt || '',
-            caption: alt
+            alt: alt || "",
+            caption: alt,
           }));
-          return this.templateManager.getTemplates().gallery({ images, error: null });
+          return this.templateManager
+            .getTemplates()
+            .gallery({ images, error: null });
         } catch (error) {
-          console.error('Gallery component error:', error);
+          console.error("Gallery component error:", error, "attrs:", attrs);
           return this.templateManager.getTemplates().gallery({
-            error: 'Invalid gallery data format'
+            error: "Invalid gallery data format",
           });
         }
       },
 
-      'video-player': (attrs, webview, docUri) => {
+      "video-player": (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().videoPlayer({
           url: attrs.url,
-          width: this.normalizeSize(attrs.width, '500px'),
-          height: this.normalizeSize(attrs.height, '280px'),
-          floatClass: attrs.float ? `float-${attrs.float}` : '',
-          cover: attrs.cover ? this.resolveRelativePath(webview, docUri, attrs.cover) : '',
+          width: this.normalizeSize(attrs.width, "500px"),
+          height: this.normalizeSize(attrs.height, "280px"),
+          floatClass: attrs.float ? `float-${attrs.float}` : "",
+          cover: attrs.cover
+            ? this.resolveRelativePath(webview, docUri, attrs.cover)
+            : "",
           coverIsSet: !!attrs.cover,
-          error: null
+          error: null,
         });
       },
 
-      'video-gallery': (attrs, webview, docUri) => {
+      "video-gallery": (attrs, webview, docUri) => {
         try {
-          const rawItems = JSON.parse(attrs.data || '[]') as Array<[string, string?, string?]>;
+          const rawItems = JSON.parse(attrs.data || "[]") as Array<
+            [string, string?, string?]
+          >;
           const videos = rawItems.map(([url, caption, cover]) => ({
             url: String(url),
-            caption: caption || '',
-            cover: cover ? this.resolveRelativePath(webview, docUri, String(cover)) : '',
+            caption: caption || "",
+            cover: cover
+              ? this.resolveRelativePath(webview, docUri, String(cover))
+              : "",
             coverIsSet: !!cover,
-            hasCaption: !!caption
+            hasCaption: !!caption,
           }));
-          return this.templateManager.getTemplates().videoGallery({ videos, error: null });
+          return this.templateManager
+            .getTemplates()
+            .videoGallery({ videos, error: null });
         } catch (error) {
-          console.error('Video gallery component error:', error);
+          console.error("Video gallery component error:", error);
           return this.templateManager.getTemplates().videoGallery({
             videos: [],
-            error: 'Invalid video gallery format'
+            error: "Invalid video gallery format",
           });
         }
       },
 
       frontmatter: (attrs, webview, docUri) => {
         const items: Record<string, string> = {};
-        let title = '';
+        let title = "";
 
         for (const [key, value] of Object.entries(attrs)) {
-          if (key === 'title') {
+          if (key === "title") {
             title = value;
           } else {
-            items[key] = ['cover', 'logo'].includes(key)
+            items[key] = ["cover", "logo"].includes(key)
               ? this.resolveRelativePath(webview, docUri, value)
               : value;
           }
         }
 
-        return this.templateManager.getTemplates().frontmatter({
-          title,
-          cover: attrs.cover ? this.resolveRelativePath(webview, docUri, attrs.cover) : '',
-          items,
-          error: null
-        }) + '\n\n';
+        return (
+          this.templateManager.getTemplates().frontmatter({
+            title,
+            cover: attrs.cover
+              ? this.resolveRelativePath(webview, docUri, attrs.cover)
+              : "",
+            items,
+            error: null,
+          }) + "\n\n"
+        );
       },
 
       product: (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().product({
-          content: attrs.content || '',
-          error: null
+          content: attrs.content || "",
+          error: null,
         });
       },
 
-      'product-section': (attrs, webview, docUri) => {
+      "product-section": (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().productSection({
-          title: attrs.title || '',
-          content: attrs.content || '',
-          error: null
+          title: attrs.title || "",
+          content: attrs.content || "",
+          error: null,
         });
-      }    
+      },
     };
   }
 
@@ -186,21 +204,31 @@ export class MarkdownRenderer {
     context: vscode.ExtensionContext
   ): string {
     try {
-    const processedMarkdown = this.preprocessMarkdown(markdown, webview, documentUri);
-      const stylesPath = path.join(context.extensionPath, 'media', 'styles.css');
+      const processedMarkdown = this.preprocessMarkdown(
+        markdown,
+        webview,
+        documentUri
+      );
+      const stylesPath = path.join(
+        context.extensionPath,
+        "media",
+        "styles.css"
+      );
       const styles = fs.existsSync(stylesPath)
-        ? fs.readFileSync(stylesPath, 'utf8')
-        : '/* Styles not found */';
+        ? fs.readFileSync(stylesPath, "utf8")
+        : "/* Styles not found */";
 
-    return this.templateManager.getTemplates().main({
-      styles,
-      content: processedMarkdown
-    });
-    } catch (error) {
-      console.error('Rendering error:', error);
       return this.templateManager.getTemplates().main({
-        styles: '',
-        error: `Error: ${error instanceof Error ? error.message : String(error)}`
+        styles,
+        content: processedMarkdown,
+      });
+    } catch (error) {
+      console.error("Rendering error:", error);
+      return this.templateManager.getTemplates().main({
+        styles: "",
+        error: `Error: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       });
     }
   }
@@ -213,81 +241,141 @@ export class MarkdownRenderer {
     const frontmatterData = this.parser.parseFrontmatter(text);
     let processedText = frontmatterData?.content || text;
 
-    if (frontmatterData && (!processedText.trim() || processedText.trim() === text.trim())) {
-      processedText = '';
+    // console.log("Preprocessing markdown:", processedText);
+
+    if (
+      frontmatterData &&
+      (!processedText.trim() || processedText.trim() === text.trim())
+    ) {
+      processedText = "";
     }
 
-    let frontmatterHtml = '';
+    let frontmatterHtml = "";
+    let additionalComponents = "";
+
     if (frontmatterData) {
+      const attributes = { ...frontmatterData.attributes };
+
+      if (attributes.images) {
+        try {
+          const imagesArray = JSON.parse(attributes.images) as string[][];
+          additionalComponents += `\n<div class="frontmatter-images">\n:gallery{:data='${JSON.stringify(
+            imagesArray
+          )}'}\n</div>\n`;
+        } catch (error) {
+          additionalComponents += this.wrapError(
+            `Parse error in frontmatter attribute <b>images</b>: ${error}`
+          );
+          console.error("Failed to parse images:", error);
+        }
+        delete attributes.images;
+      }
+
+      if (attributes.video) {
+        try {
+          const videosArray = JSON.parse(attributes.video) as string[][];
+          additionalComponents += `\n<div class="frontmatter-video">\n:video-gallery{:data='${JSON.stringify(
+            videosArray
+          )}'}\n</div>\n`;
+        } catch (error) {
+          additionalComponents += this.wrapError(
+            `Parse error in frontmatter attribute <b>video</b>: ${error}`
+          );
+          console.error("Failed to parse videos:", error);
+        }
+        delete attributes.video;
+      }
+
+      console.log("Generated additional components:", additionalComponents);
+
       frontmatterHtml = this.componentRenderers.frontmatter(
-        frontmatterData.attributes,
+        attributes,
         webview,
         documentUri
       );
     }
 
-    return frontmatterHtml + this.processComponents(processedText, webview, documentUri);
+    return (
+      frontmatterHtml +
+      this.processComponents(
+        processedText + additionalComponents,
+        webview,
+        documentUri
+      )
+    );
   }
 
-private processComponents(
-  text: string,
-  webview: vscode.Webview,
-  documentUri: vscode.Uri
-): string {
-  const parsed = this.parser.parseComponents(text);
-  const wrapError = (error: string) => 
-    `<div class="component-error">${error}</div>`;
+  private processComponents(
+    text: string,
+    webview: vscode.Webview,
+    documentUri: vscode.Uri
+  ): string {
+    const parsed = this.parser.parseComponents(text);
 
-  const renderChild = (child: string | Component): string => {
-    if (typeof child === 'string') return child;
-    
+    const renderChild = (child: string | Component): string => {
+      if (typeof child === "string") return child;
+
       console.debug(`Processing child ${child.componentName}`, {
         isBlock: child.isBlock,
-        attributes: child.attributes
+        attributes: child.attributes,
       });
 
-    const renderer = this.componentRenderers[child.componentName];
-    if (!renderer) {
-      return wrapError(`Renderer not found for: ${child.componentName}`);
-    }
+      const renderer = this.componentRenderers[child.componentName];
+      if (!renderer) {
+        return this.wrapError(`Renderer not found for: ${child.componentName}`);
+      }
 
       if (child.isBlock) {
         return renderBlockComponent(child as BlockComponent);
       }
 
-    return child.error 
-      ? renderer({ error: child.error }, webview, documentUri)
-      : renderer(child.attributes, webview, documentUri);
-  };
+      return child.error
+        ? renderer({ error: child.error }, webview, documentUri)
+        : renderer(child.attributes, webview, documentUri);
+    };
 
-  const renderBlockComponent = (node: BlockComponent): string => {
-    const childrenContent = node.children.map(renderChild).join('');
-    console.debug(`Rendering ${node.componentName} block with:`, {
-      title: node.attributes.title,
-      content: childrenContent
-    });
+    const renderBlockComponent = (node: BlockComponent): string => {
+      const childrenContent = node.children.map(renderChild).join("");
+      console.debug(`Rendering ${node.componentName} block with:`, {
+        title: node.attributes.title,
+        content: childrenContent,
+      });
 
-      return this.componentRenderers[node.componentName]({
-        ...node.attributes,
-        content: childrenContent
-      }, webview, documentUri);
-  };
+      return this.componentRenderers[node.componentName](
+        {
+          ...node.attributes,
+          content: childrenContent,
+        },
+        webview,
+        documentUri
+      );
+    };
 
     const renderComponent = (node: Component): string => {
       if (node.error) {
-        return this.componentRenderers[node.componentName]?.({ error: node.error }, webview, documentUri)
-          || wrapError(node.error);
+        return (
+          this.componentRenderers[node.componentName]?.(
+            { error: node.error },
+            webview,
+            documentUri
+          ) || this.wrapError(node.error)
+        );
       }
 
-    if (node.isBlock) {
-      return renderBlockComponent(node as BlockComponent);
-    }
-    return this.componentRenderers[node.componentName]?.(node.attributes, webview, documentUri)
-          || wrapError(`Renderer failed for: ${node.componentName}`);
-  };
+      if (node.isBlock) {
+        return renderBlockComponent(node as BlockComponent);
+      }
+      return (
+        this.componentRenderers[node.componentName]?.(
+          node.attributes,
+          webview,
+          documentUri
+        ) || this.wrapError(`Renderer failed for: ${node.componentName}`)
+      );
+    };
 
-    return parsed.map(node =>
-      typeof node === 'string' ? node : renderComponent(node)
-    ).join('');
-}
+    return parsed
+      .map((node) => (typeof node === "string" ? node : renderComponent(node)))
+      .join("");
+  }
 }
