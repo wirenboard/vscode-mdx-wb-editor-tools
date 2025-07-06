@@ -1,6 +1,5 @@
 interface ComponentBase {
   componentName: string;
-  originalText: string;
   error?: string;
   isBlock: boolean;
   children?: Array<string | Component>;
@@ -33,27 +32,22 @@ export class MarkdownParser {
     let currentValue = '';
 
     for (const line of frontmatterContent.split("\n")) {
-      // Проверяем начало нового ключа
       const keyMatch = line.match(/^(\w+):\s*(.*)/);
       if (keyMatch) {
-        // Сохраняем предыдущий ключ, если есть
         if (currentKey) {
           attributes[currentKey] = currentValue.trim();
         }
         currentKey = keyMatch[1];
         currentValue = keyMatch[2];
       } else if (currentKey) {
-        // Продолжаем собирать значение для текущего ключа
         currentValue += '\n' + line;
       }
     }
 
-    // Сохраняем последний ключ
     if (currentKey) {
       attributes[currentKey] = currentValue.trim();
     }
 
-    // Удаляем кавычки вокруг значений, если они есть
     for (const key in attributes) {
       attributes[key] = attributes[key].replace(/^['"](.*)['"]$/, '$1').trim();
     }
@@ -103,7 +97,6 @@ export class MarkdownParser {
     return {
       componentName: match[1],
       attributes: this.parseComponentAttributes(match[2]),
-      originalText: match[0],
       isBlock: false,
     };
   }
@@ -112,7 +105,6 @@ export class MarkdownParser {
     return {
       componentName: match[1],
       attributes: match[2] ? this.parseComponentAttributes(match[2]) : {},
-      originalText: match[0],
       isBlock: true,
       children: [],
     };
@@ -123,7 +115,7 @@ export class MarkdownParser {
     lastIndex: number
   ): RegExpExecArray | null {
     const inlinePattern = /:([\w-]+)\{([\s\S]*?)\}/g;
-    const blockPattern = /::(?!::)([\w-]+)(?:\{([\s\S]*?)\})?|\:\:/g; // Объединённый паттерн
+    const blockPattern = /::(?!::)([\w-]+)(?:\{([\s\S]*?)\})?|\:\:/g;
 
     inlinePattern.lastIndex = lastIndex;
     blockPattern.lastIndex = lastIndex;
@@ -142,39 +134,22 @@ export class MarkdownParser {
     const result: ParseResult = [];
     const stack: Array<{ component: BlockComponent; startIndex: number }> = [];
     let lastIndex = 0;
-    const IGNORE_MARKERS = ["#description", "#info"];
-
-    const cleanLine = (line: string) => {
-      const trimmed = line.trim();
-      return IGNORE_MARKERS.some((marker) => trimmed.startsWith(marker))
-        ? ""
-        : line;
-    };
-
-    // Разбиваем текст на строки, чистим и собираем обратно
-    const cleanedText = text.split("\n").map(cleanLine).join("\n");
 
     while (true) {
-      const match = this.getNextMatch(cleanedText, lastIndex);
+      const match = this.getNextMatch(text, lastIndex);
       if (!match) break;
 
-      // Добавляем текст между компонентами
       if (match.index > lastIndex) {
         this.addTextToContext(
-          cleanedText.slice(lastIndex, match.index),
+          text.slice(lastIndex, match.index),
           result,
           stack.map((s) => s.component)
         );
       }
 
       if (match[0] === "::") {
-        // Закрывающий тег
         if (stack.length > 0) {
-          const { component, startIndex } = stack.pop()!;
-          component.originalText = cleanedText.slice(
-            startIndex,
-            match.index + 2
-          ); // +2 для '::'
+          const { component } = stack.pop()!;
           this.addComponentToContext(
             component,
             result,
@@ -182,7 +157,6 @@ export class MarkdownParser {
           );
         }
       } else {
-        // Открывающий тег
         const component = match[0].startsWith("::")
           ? this.createBlockComponent(match)
           : this.createInlineComponent(match);
@@ -204,8 +178,7 @@ export class MarkdownParser {
       lastIndex = match.index + match[0].length;
     }
 
-    // Добавляем оставшийся текст
-    if (lastIndex < cleanedText.length) {
+    if (lastIndex < text.length) {
       this.addTextToContext(
         text.slice(lastIndex),
         result,
