@@ -257,32 +257,20 @@ export class MarkdownRenderer {
       const attributes = { ...frontmatterData.attributes };
 
       if (attributes.images) {
-        try {
-          const imagesArray = JSON.parse(attributes.images) as string[][];
-          additionalComponents += `\n<div class="frontmatter-images">\n:gallery{:data='${JSON.stringify(
-            imagesArray
-          )}'}\n</div>\n`;
-        } catch (error) {
-          additionalComponents += this.wrapError(
-            `Parse error in frontmatter attribute <b>images</b>: ${error}`
-          );
-          console.error("Failed to parse images:", error);
-        }
+        additionalComponents += this.createComponentFromFrontmatter(           
+          'images',
+          'gallery',
+          attributes.images
+        );
         delete attributes.images;
       }
-
+    
       if (attributes.video) {
-        try {
-          const videosArray = JSON.parse(attributes.video) as string[][];
-          additionalComponents += `\n<div class="frontmatter-video">\n:video-gallery{:data='${JSON.stringify(
-            videosArray
-          )}'}\n</div>\n`;
-        } catch (error) {
-          additionalComponents += this.wrapError(
-            `Parse error in frontmatter attribute <b>video</b>: ${error}`
-          );
-          console.error("Failed to parse videos:", error);
-        }
+        additionalComponents += this.createComponentFromFrontmatter(
+          'video', 
+          'video-gallery',          
+          attributes.video
+        );
         delete attributes.video;
       }
 
@@ -303,6 +291,24 @@ export class MarkdownRenderer {
         documentUri
       )
     );
+  }
+
+  private createComponentFromFrontmatter(
+    attributeName: string, 
+    componentName: string,    
+    value: string
+  ): string {
+    try {
+      const data = JSON.parse(value);
+      return `\n<div class="frontmatter-${attributeName}">\n:${componentName}{:data='${JSON.stringify(data)}'}\n</div>\n`;
+    } catch (error) {
+      console.error(`Frontmatter attribute "${attributeName}" error:`, error);
+      return this.wrapError(
+        `Invalid format in frontmatter attribute <b>"${attributeName}"</b>: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
   }
 
   private processComponents(
