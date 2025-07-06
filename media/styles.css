@@ -62,12 +62,12 @@ body {
 }
 
 /* === Фронтматтер === */
+/* 1) стандартные стили таблицы */
 .frontmatter-table {
   width: 100%;
   border-collapse: collapse;
   margin: 1rem 0;
 }
-
 .frontmatter-table th,
 .frontmatter-table td {
   border: 1px solid #ddd;
@@ -75,18 +75,60 @@ body {
   text-align: left;
   vertical-align: middle;
 }
-
 .frontmatter-table th {
   background-color: #f9f9f9;
   font-weight: 600;
 }
-
 .frontmatter-cover {
   display: block;
   max-width: 120px;
   height: auto;
   border-radius: 4px;
   object-fit: cover;
+}
+
+/* 2) мобильная «перестройка» */
+@media (max-width: 768px) {
+  /* прячем шапку */
+  .frontmatter-table thead {
+    display: none;
+  }
+
+  /* делаем каждый <tr> блочным, а внутри него — <td> flex-строки */
+  .frontmatter-table,
+  .frontmatter-table tbody,
+  .frontmatter-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  /* каждая ячейка теперь строка: label слева, value справа */
+  .frontmatter-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* вставляем лейбл справа от data-label */
+  .frontmatter-table td::before {
+    content: attr(data-label);
+    flex: 0 0 35%;
+    font-weight: 600;
+    text-align: left;
+    margin-right: 1rem;
+  }
+
+  /* картинка-обложка скейлится нормально */
+  .frontmatter-cover {
+    max-width: 40%;
+    height: auto;
+    object-fit: contain;
+    margin-left: auto;
+  }
 }
 
 /* === Фото: контейнер и картинка === */
@@ -235,48 +277,30 @@ body {
 }
 
 /* === Товары === */
-.description-component {
-  display: block;
-  padding: 5px;
-}
-
-.info-component {
-  display: block;
-  padding: 5px;
-}
-
-/* показываем “ярлык” с именем класса */
+/* Общие стили для контейнеров */
 .description-component,
 .info-component {
   position: relative;
+  border: 1px solid #333;
+  padding: 32px 20px 10px 20px; /* сверху резерв под ярлык */
+  box-sizing: border-box;
+  margin-bottom: 2em;
 }
 
-/* ярлык для description */
-.description-component::before {
-  content: ".description-component";
+.description-component-label,
+.info-component-label {
   position: absolute;
   top: 0;
-  left: 0;
-  background: rgba(3, 47, 243, 0.8);
+  left: 20px;
+  transform: translateY(-50%);
+  background: #5a617f;
   color: #fff;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-bottom-right-radius: 4px;
-  z-index: 10;
-}
-
-/* ярлык для info */
-.info-component::before {
-  content: ".info-component";
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: rgba(95, 14, 209, 0.8);
-  color: #fff;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-bottom-right-radius: 4px;
-  z-index: 10;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 

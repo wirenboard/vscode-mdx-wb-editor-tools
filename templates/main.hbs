@@ -4,6 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>{{styles}}</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const wrapper     = document.querySelector('.product-wrapper');
+  const contentBox  = document.querySelector('.product-wrapper-content');
+  if (!wrapper || !contentBox) return;
+
+  const requiredClasses = ['description-component', 'info-component'];
+  const missing = requiredClasses.filter(cls =>
+    !wrapper.querySelector('.' + cls)
+  );
+
+  if (missing.length) {
+    const names = missing.map(c =>
+      c.replace(/-component$/, '')  // убираем суффикс
+    );
+    const err = document.createElement('div');
+    err.textContent = 'Ошибка разметки, не хватает #' + names.join(', ');
+    err.style.color      = 'red';
+    err.style.fontWeight = 'bold';
+    contentBox.prepend(err);
+  }
+});
+</script>
+
+
 </head>
 <body>
 
