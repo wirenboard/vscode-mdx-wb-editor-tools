@@ -122,27 +122,38 @@ export class MarkdownParser {
     const result: ParseResult = [];
     const stack: Array<{component: BlockComponent, startIndex: number}> = [];
     let lastIndex = 0;
+    const IGNORE_MARKERS = ['#description', '#info'];
+
+    const cleanLine = (line: string) => {
+      const trimmed = line.trim();
+      return IGNORE_MARKERS.some(marker => trimmed.startsWith(marker)) ? '' : line;
+    };
+
+    // Разбиваем текст на строки, чистим и собираем обратно
+    const cleanedText = text.split('\n')
+      .map(cleanLine)
+      .join('\n');
 
     while (true) {
-      const match = this.getNextMatch(text, lastIndex);
+      const match = this.getNextMatch(cleanedText, lastIndex);
       if (!match) break;
 
       // Добавляем текст между компонентами
       if (match.index > lastIndex) {
-        this.addTextToContext(text.slice(lastIndex, match.index), result, stack.map(s => s.component));
+        this.addTextToContext(cleanedText.slice(lastIndex, match.index), result, stack.map(s => s.component));
       }
 
       if (match[0] === '::') { // Закрывающий тег
         if (stack.length > 0) {
           const {component, startIndex} = stack.pop()!;
-          component.originalText = text.slice(startIndex, match.index + 2); // +2 для '::'
+          component.originalText = cleanedText.slice(startIndex, match.index + 2); // +2 для '::'
           this.addComponentToContext(component, result, stack.map(s => s.component));
         }
       } else { // Открывающий тег
-        const component = match[0].startsWith('::') 
+        const component = match[0].startsWith('::')
           ? this.createBlockComponent(match)
           : this.createInlineComponent(match);
-        
+
         if (component.isBlock) {
           stack.push({component: component as BlockComponent, startIndex: match.index});
         } else {
@@ -154,10 +165,11 @@ export class MarkdownParser {
     }
 
     // Добавляем оставшийся текст
-    if (lastIndex < text.length) {
+    if (lastIndex < cleanedText.length) {
       this.addTextToContext(text.slice(lastIndex), result, stack.map(s => s.component));
     }
 
     return result;
   }
+
 }
