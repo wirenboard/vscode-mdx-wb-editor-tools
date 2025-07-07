@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import MarkdownIt from "markdown-it";
 import { TemplateManager } from "./templateManager";
 import { MarkdownParser, Component, BlockComponent } from "./parser";
 type ComponentRenderer = (
@@ -13,6 +14,8 @@ export class MarkdownRenderer {
   private readonly componentRenderers: Record<string, ComponentRenderer>;
   private readonly templateManager: TemplateManager;
   private readonly parser = new MarkdownParser();
+  private readonly md: MarkdownIt;
+
   private wrapError(error: string): string {
     return `<div class="component-error">${error}</div>`;
   }
@@ -20,6 +23,10 @@ export class MarkdownRenderer {
   constructor(context: vscode.ExtensionContext) {
     this.templateManager = new TemplateManager(context);
     this.componentRenderers = this.createComponentRenderers();
+    this.md = new MarkdownIt({
+      html: true,
+      linkify: true,
+    });
   }
 
   private resolveRelativePath(
@@ -210,6 +217,39 @@ export class MarkdownRenderer {
     };
   }
 
+  private processMarkdownWithComponents(
+    text: string,
+    webview: vscode.Webview,
+    documentUri: vscode.Uri
+  ): string {
+    const parsed = this.parser.parseComponents(text);
+  
+    const processNode = (node: string | Component): string => {
+      if (typeof node === "string") {
+        return this.md.render(node);
+      } else {
+        const renderer = this.componentRenderers[node.componentName];
+        if (!renderer) {
+          return this.wrapError(`Unknown component: ${node.componentName}`);
+        }
+  
+        // Рекурсивно обрабатываем детей для блочных компонентов
+        if (node.isBlock && "children" in node) {
+          const childrenContent = node.children.map(processNode).join("");
+          return renderer(
+            { ...node.attributes, content: childrenContent },
+            webview,
+            documentUri
+          );
+        }
+  
+        return renderer(node.attributes, webview, documentUri);
+      }
+    };
+  
+    return parsed.map(processNode).join("");
+  }
+
   public render(
     markdown: string,
     webview: vscode.Webview,
@@ -217,31 +257,24 @@ export class MarkdownRenderer {
     context: vscode.ExtensionContext
   ): string {
     try {
-      const processedMarkdown = this.preprocessMarkdown(
-        markdown,
-        webview,
-        documentUri
-      );
-      const stylesPath = path.join(
-        context.extensionPath,
-        "media",
-        "styles.css"
-      );
+      const processedMarkdown = this.preprocessMarkdown(markdown, webview, documentUri);
+      const stylesPath = path.join(context.extensionPath, "media", "styles.css");
       const styles = fs.existsSync(stylesPath)
         ? fs.readFileSync(stylesPath, "utf8")
         : "/* Styles not found */";
 
-      return this.templateManager.getTemplates().main({
-        styles,
-        content: processedMarkdown,
-      });
+      const content = this.processMarkdownWithComponents(
+        processedMarkdown,
+        webview,
+        documentUri
+      );
+
+      return this.templateManager.getTemplates().main({ styles, content });
     } catch (error) {
       console.error("Rendering error:", error);
       return this.templateManager.getTemplates().main({
         styles: "",
-        error: `Error: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        error: `Error: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   }
@@ -253,9 +286,6 @@ export class MarkdownRenderer {
   ): string {
     const frontmatterData = this.parser.parseFrontmatter(text);
     let processedText = frontmatterData?.content || text;
-
-    // console.log("Preprocessing markdown:", processedText);
-
     if (
       frontmatterData &&
       (!processedText.trim() || processedText.trim() === text.trim())
@@ -323,14 +353,7 @@ export class MarkdownRenderer {
       );
     }
 
-    return (
-      frontmatterHtml +
-      this.processComponents(
-        processedText + additionalComponents,
-        webview,
-        documentUri
-      )
-    );
+    return frontmatterHtml + processedText + additionalComponents;
   }
 
   private createComponentFromFrontmatter(
@@ -353,78 +376,5 @@ export class MarkdownRenderer {
       );
     }
   }
-
-  private processComponents(
-    text: string,
-    webview: vscode.Webview,
-    documentUri: vscode.Uri
-  ): string {
-    const parsed = this.parser.parseComponents(text);
-
-    const renderChild = (child: string | Component): string => {
-      if (typeof child === "string") return child;
-
-      console.debug(`Processing child ${child.componentName}`, {
-        isBlock: child.isBlock,
-        attributes: child.attributes,
-      });
-
-      const renderer = this.componentRenderers[child.componentName];
-      if (!renderer) {
-        return this.wrapError(`Renderer not found for: ${child.componentName}`);
-      }
-
-      if (child.isBlock) {
-        return renderBlockComponent(child as BlockComponent);
-      }
-
-      return child.error
-        ? renderer({ error: child.error }, webview, documentUri)
-        : renderer(child.attributes, webview, documentUri);
-    };
-
-    const renderBlockComponent = (node: BlockComponent): string => {
-      const childrenContent = node.children.map(renderChild).join("");
-      console.debug(`Rendering ${node.componentName} block with:`, {
-        title: node.attributes.title,
-        content: childrenContent,
-      });
-
-      return this.componentRenderers[node.componentName](
-        {
-          ...node.attributes,
-          content: childrenContent,
-        },
-        webview,
-        documentUri
-      );
-    };
-
-    const renderComponent = (node: Component): string => {
-      if (node.error) {
-        return (
-          this.componentRenderers[node.componentName]?.(
-            { error: node.error },
-            webview,
-            documentUri
-          ) || this.wrapError(node.error)
-        );
-      }
-
-      if (node.isBlock) {
-        return renderBlockComponent(node as BlockComponent);
-      }
-      return (
-        this.componentRenderers[node.componentName]?.(
-          node.attributes,
-          webview,
-          documentUri
-        ) || this.wrapError(`Renderer failed for: ${node.componentName}`)
-      );
-    };
-
-    return parsed
-      .map((node) => (typeof node === "string" ? node : renderComponent(node)))
-      .join("");
-  }
 }
+
