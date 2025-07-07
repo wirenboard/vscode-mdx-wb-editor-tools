@@ -1,8 +1,8 @@
 /* === Переменные === */
 :root {
   --grid-margin: 16px;
-  --border-color: transparent;
-  --border-radius: 8px;
+  --border-color: rgb(184, 186, 195);
+  --border-radius: 0px;
   --item-color: #fff;
   --placeholder-bg: rgb(33, 94, 88);
   --play-icon-size: 32px;
@@ -51,9 +51,10 @@ body {
 .mdx-photo-caption {
   display: block;
   border-top: 1px solid var(--border-color);
-  font: italic 0.9em/1 sans-serif;
-  padding: 0 4px;
+  font: italic 0.9em sans-serif;
+  padding: 4px;
   margin: 0 4px 0;
+  color: #28292f;
 }
 
 /* === Frontmatter === */
