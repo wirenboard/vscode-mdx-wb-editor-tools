@@ -121,6 +121,50 @@
           }
         }
       }
-    }
+    },
+    "WB Component Product": {
+      "prefix": "wbs-comp-product",
+      "body": [
+        "::product",
+        "",
+        "#description",
+        "",
+        "#info",
+        "",
+        "::product-section{title=\"Название секции 1\"}",
+        "",
+        ":photo{",
+        "  src=\"URL\"",
+        "  caption=\"\"",
+        "  width=\"300px\"",
+        "  float=\"right\"}",
+        "}",   
+        "",
+        "Текст секции 1",
+        "",     
+        "::",
+        "",
+        "::product-section{title=\"Название секции 2\"}",
+        "",
+        ":photo{",
+        "  src=\"URL\"",
+        "  caption=\"\"",
+        "  width=\"300px\"",
+        "  float=\"right\"}",
+        "}",   
+        "",
+        "Текст секции 2",
+        "",         
+        "",
+        "::",        
+        "",
+        "::"
+      ],
+      "description": "Секция описания товара",
+      "docs": {
+        "attributes": {          
+        }
+      }
+    }    
   }
   
