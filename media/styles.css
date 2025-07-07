@@ -1,6 +1,7 @@
+/* === Переменные === */
 :root {
   --grid-margin: 16px;
-  --border-color: #d5d5d5;
+  --border-color: transparent;
   --border-radius: 8px;
   --item-color: #fff;
   --placeholder-bg: rgb(33, 94, 88);
@@ -8,61 +9,54 @@
 }
 
 /* === Базовые стили === */
-html {
-  zoom: 0.7;
-}
+html { zoom: 0.7; }
 body {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 var(--grid-margin);
   box-sizing: border-box;
   font-size: 18px;
-  background-color: white;
+  background: #fff;
   color: rgb(40, 39, 42);
 }
-
 .errors,
-.component-error {
-  color: red;
-}
+.component-error { color: red; }
 
-/* === Утилиты для колонок === */
+/* === Утилиты колонок === */
 .cols-2 { --column-count: 2; }
 .cols-3 { --column-count: 3; }
 .cols-4 { --column-count: 4; }
 .cols-5 { --column-count: 5; }
 
-/* === Общая сетка для галерей === */
+/* === Галереи === */
 .gallery-base,
 .mdx-gallery {
-  --min-item-width: 220px;
+  --min-w: 220px;
   --gap: 8px;
   display: grid;
   gap: var(--gap);
-  grid-template-columns: repeat(auto-fit, minmax(var(--min-item-width), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-w), 1fr));
   margin: auto;
-  max-width: calc(5 * var(--min-item-width) + 4 * var(--gap));
+  max-width: calc(5 * var(--min-w) + 4 * var(--gap));
 }
-
 .mdx-video-gallery {
-  --min-item-width: 250px;
-  max-width: calc(3 * var(--min-item-width) + 4 * var(--gap));
+  --min-w: 250px;
+  /* переопределяем только нужное */
+  max-width: calc(3 * var(--min-w) + 4 * var(--gap));
 }
 
-/* === Общие стили для подписей === */
+/* === Подписи === */
 .mdx-video-gallery-caption,
 .mdx-gallery-caption,
 .mdx-photo-caption {
   display: block;
   border-top: 1px solid var(--border-color);
-  font-size: .9em;
-  font-style: italic;
+  font: italic 0.9em/1 sans-serif;
   padding: 0 4px;
   margin: 0 4px 0;
 }
 
-/* === Фронтматтер === */
-/* 1) стандартные стили таблицы */
+/* === Frontmatter === */
 .frontmatter-table {
   width: 100%;
   border-collapse: collapse;
@@ -76,152 +70,97 @@ body {
   vertical-align: middle;
 }
 .frontmatter-table th {
-  background-color: #f9f9f9;
+  background: #f9f9f9;
   font-weight: 600;
 }
 .frontmatter-cover {
   display: block;
   max-width: 120px;
-  height: auto;
   border-radius: 4px;
   object-fit: cover;
 }
 
-/* 2) мобильная «перестройка» */
+/* мобильная перестройка таблицы */
 @media (max-width: 768px) {
-  /* прячем шапку */
-  .frontmatter-table thead {
-    display: none;
-  }
-
-  /* делаем каждый <tr> блочным, а внутри него — <td> flex-строки */
+  .frontmatter-table thead { display: none; }
   .frontmatter-table,
   .frontmatter-table tbody,
   .frontmatter-table tr {
     display: block;
     width: 100%;
   }
-
-  /* каждая ячейка теперь строка: label слева, value справа */
   .frontmatter-table td {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: 0.75rem 1rem;
     border: 1px solid #ddd;
-    width: 100%;
     box-sizing: border-box;
   }
-
-  /* вставляем лейбл справа от data-label */
   .frontmatter-table td::before {
     content: attr(data-label);
     flex: 0 0 35%;
     font-weight: 600;
-    text-align: left;
     margin-right: 1rem;
   }
-
-  /* картинка-обложка скейлится нормально */
   .frontmatter-cover {
     max-width: 40%;
-    height: auto;
     object-fit: contain;
     margin-left: auto;
   }
 }
 
-/* === Фото: контейнер и картинка === */
-.mdx-photo {
+/* === Общие медиа-элементы === */
+.mdx-photo,
+.mdx-gallery-item,
+.mdx-video-gallery-item {
   background: var(--item-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   overflow: hidden;
+  position: relative;
 }
-.mdx-photo > img {
-  display: block;
-  width: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-.mdx-photo:hover > img {
-  transform: scale(1.05);
-}
-
-/* === Фото-галерея: контейнер и картинка === */
-.mdx-gallery-item {
-  background: var(--item-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-}
-.mdx-gallery-item > img {
-  display: block;
-  width: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
+.mdx-photo > img,
+.mdx-gallery-item > img,
 .mdx-video-gallery-item > img {
   display: block;
   width: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
+.mdx-photo:hover > img,
 .mdx-gallery-item:hover > img {
   transform: scale(1.05);
 }
 
-/* === Видео-галерея: контейнер элемента === */
-.mdx-video-gallery-item {
-  background: var(--item-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  overflow: visible; /* подпись пока снизу */
-  position: relative;
-}
-
-/* === Ваша структура: обёртка медиа === */
+/* === Видео-обёртка === */
 .media-wrapper {
   width: 100%;
   overflow: hidden;
   position: relative;
   border-radius: var(--border-radius);
 }
-
-.aspect-ratio-4-3 {
-  aspect-ratio: 4/3;
-}
-
-.aspect-ratio-16-9 {
-  aspect-ratio: 16/9;
-}
-
-/* делаем ссылку на весь блок media-wrapper */
+.aspect-ratio-4-3 { aspect-ratio: 4/3; }
+.aspect-ratio-16-9 { aspect-ratio: 16/9; }
 .media-wrapper > .mdx-video-link {
   display: block;
   width: 100%;
   height: 100%;
 }
-
-/* картинка или плейсхолдер внутри media-wrapper */
 .media-wrapper img,
 .media-wrapper .mdx-video-placeholder {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  
   transition: transform 0.3s ease;
 }
-.mdx-video-placeholder{
+.mdx-video-placeholder {
   background: var(--placeholder-bg);
 }
 .media-wrapper:hover img {
   transform: scale(1.05);
 }
-
-/* иконка “play” внутри media-wrapper */
 .media-wrapper .mdx-video-play-icon {
   position: absolute;
   top: 50%; left: 50%;
@@ -231,80 +170,64 @@ body {
   pointer-events: none;
   z-index: 2;
 }
-
-.media-wrapper .mdx-video-play-icon .play-circle {
+.media-wrapper .play-circle,
+.media-wrapper .play-triangle {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100% + 1em);
-  height: calc(100% + 1em);
-  background: rgba(255, 255, 255, 0.5);
+  z-index: 2;
+}
+.media-wrapper .play-circle {
+  width: calc(var(--play-icon-size) + 1em);
+  height: calc(var(--play-icon-size) + 1em);
+  background: rgba(255,255,255,0.5);
   border-radius: 50%;
   z-index: 1;
 }
-
-.media-wrapper .mdx-video-play-icon .play-triangle {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 0; height: 0;
-  border-left: .8em solid #333;
-  border-top: .6em solid transparent;
-  border-bottom: .6em solid transparent;
-  z-index: 2;
+.media-wrapper .play-triangle {
+  width: 0;
+  height: 0;
+  border-left: 0.8em solid #333;
+  border-top: 0.6em solid transparent;
+  border-bottom: 0.6em solid transparent;
 }
 
 /* === Float-классы === */
-.float-left {
-  float: left;
-  margin: 0 var(--grid-margin) var(--grid-margin) 0;
-}
-.float-right {
-  float: right;
-  margin: 0 0 var(--grid-margin) var(--grid-margin);
-}
+.float-left  { float: left;  margin: 0 var(--grid-margin) var(--grid-margin) 0; }
+.float-right { float: right; margin: 0 0 var(--grid-margin) var(--grid-margin); }
 .float-center {
   display: block;
-  margin: 0 auto var(--grid-margin) auto;
+  margin: 0 auto var(--grid-margin);
 }
 
-.frontmatter-images {
-  display: block;
-}
-
-.frontmatter-video {
-  display: block;
-}
+/* вспомогательные блоки */
+.frontmatter-images,
+.frontmatter-video { display: block; }
 
 /* === Товары === */
-/* Общие стили для контейнеров */
 .description-component,
 .info-component {
   position: relative;
   border: 1px solid #333;
-  padding: 32px 20px 10px 20px; /* сверху резерв под ярлык */
-  box-sizing: border-box;
+  padding: 32px 20px 10px;
   margin-bottom: 2em;
+  box-sizing: border-box;
 }
-
 .description-component-label,
 .info-component-label {
   position: absolute;
-  top: 0;
-  left: 20px;
+  top: 0; left: 20px;
   transform: translateY(-50%);
   background: #5a617f;
   color: #fff;
   font-size: 14px;
-  line-height: 1;
   padding: 4px 8px;
   border-radius: 4px;
-  pointer-events: none;
   white-space: nowrap;
+  pointer-events: none;
 }
 
-
-/* Корректная сетка секций с учётом float-элементов */
+/* === Секции продуктов === */
 .product-wrapper {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -313,46 +236,27 @@ body {
   padding: 5px;
   box-sizing: border-box;
 }
-
 .product-section {
   display: flow-root;
   padding: 5px;
   box-sizing: border-box;
 }
 
-/* === Адаптация === */
+/* === Адаптация под мобайл === */
 @media (max-width: 600px) {
-  /* 1) Сбрасываем float и делаем картинку во всю ширину */
   .mdx-photo,
-  .float-right,
-  .float-left {
-    float: none !important;
-    width: 100%     !important;
-    margin: 0 0 var(--grid-margin) 0 !important;
+  .float-left,
+  .float-right {
+    float: none!important;    
+    width: 60%!important;
+    margin: 0 0 var(--grid-margin)!important;
   }
 
-  /* 2) Убираем жёсткий aspect-ratio и overflow:hidden,
-        чтобы картинка не обрезалась и шла своим естественным размером */
-  .media-wrapper {
-    aspect-ratio: auto !important;
-    height: auto       !important;
-    overflow: visible  !important;
-  }
-
-  /* 3) Гарантируем, что img займёт всю ширину и пропорции сохранятся */
-  .media-wrapper img {
-    width: 100% !important;
-    height: auto !important;
-    object-fit: contain;
-  }
-  /* Сбрасываем плейсхолдер */
+  .media-wrapper img,
   .media-wrapper .mdx-video-placeholder {
-    width: 100% !important;
-    height: auto !important;
-    object-fit: contain !important;
+    width: 100%!important;
   }
   .media-wrapper .mdx-video-placeholder {
     aspect-ratio: 16/9;
-  }  
+  }
 }
-
