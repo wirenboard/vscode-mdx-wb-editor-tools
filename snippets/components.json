@@ -137,7 +137,7 @@
         "  src=\"URL\"",
         "  caption=\"\"",
         "  width=\"300px\"",
-        "  float=\"right\"}",
+        "  float=\"right\"",
         "}",   
         "",
         "Текст секции 1",
@@ -150,7 +150,7 @@
         "  src=\"URL\"",
         "  caption=\"\"",
         "  width=\"300px\"",
-        "  float=\"right\"}",
+        "  float=\"right\"",
         "}",   
         "",
         "Текст секции 2",
@@ -165,6 +165,28 @@
         "attributes": {          
         }
       }
-    }    
+    },
+    "WB Component Product Section": {
+      "prefix": "wbs-comp-product-section",
+      "body": [
+        "::product-section{title=\"Название секции 1\"}",
+        "",
+        ":photo{",
+        "  src=\"URL\"",
+        "  caption=\"\"",
+        "  width=\"300px\"",
+        "  float=\"right\"",
+        "}",   
+        "",
+        "Текст секции 1",
+        "",     
+        "::"
+      ],
+      "description": "Секция характеристик товара",
+      "docs": {
+        "attributes": {          
+        }
+      }
+    }     
   }
   
