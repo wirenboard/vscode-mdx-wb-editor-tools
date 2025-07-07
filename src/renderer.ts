@@ -301,26 +301,19 @@ export class MarkdownRenderer {
             .map(item => item.replace(/^[\s-]*|[\s-]*$/g, ''))
             .filter(item => item);
         }
-  
-        // Поднимаемся на 2 уровня вверх (из каталога) и переходим в solutions
+
         const currentDir = vscode.Uri.joinPath(documentUri, '../..');
         const solutionsDir = vscode.Uri.joinPath(currentDir, 'solutions');
-        console.log('Solutions dir:', solutionsDir.fsPath);
-  
-        const useCaseHtml = useCases.map((caseName: string) => {
-          const fileName = `${caseName}.md`;
-          const filePath = vscode.Uri.joinPath(solutionsDir, fileName);
-          
-          console.log('Checking file:', filePath.fsPath);
+
+        attributes.use_cases = useCases.map((caseName: string) => {
+          const trimmedCaseName = caseName.trim();
+          const filePath = vscode.Uri.joinPath(solutionsDir, `${trimmedCaseName}.md`);
           const fileExists = fs.existsSync(filePath.fsPath);
-          console.log('File exists:', fileExists, 'for', fileName);
-          
           const colorClass = fileExists ? 'valid-use-case' : 'invalid-use-case';
-          return `<div class="${colorClass}">${fileName}</div>`;
-        }).join(', ');
-  
-        additionalComponents += `<div class="use-cases-section">${useCaseHtml}</div>`;
-      }  
+          return `<span class="${colorClass}">${trimmedCaseName}</span>`;
+        }).join(', <br>').replace(/[\r\n]+\s*,\s*|,\s*[\r\n]+/g, ', '); 
+        // Удаляет переносы строк, заменяя их пробелами, затем форматирует запятые
+      }
 
       console.log("Generated additional components:", additionalComponents);
 
