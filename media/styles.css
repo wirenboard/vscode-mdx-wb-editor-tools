@@ -345,5 +345,14 @@ body {
     height: auto !important;
     object-fit: contain;
   }
+  /* Сбрасываем плейсхолдер */
+  .media-wrapper .mdx-video-placeholder {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+  .media-wrapper .mdx-video-placeholder {
+    aspect-ratio: 16/9;
+  }  
 }
 
