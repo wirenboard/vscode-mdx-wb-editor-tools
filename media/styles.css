@@ -115,15 +115,45 @@ body {
 }
 
 /* === Общие медиа-элементы === */
-.mdx-photo,
+.mdx-photo{
+  background: var(--item-color);
+  /* overflow: hidden; */
+  position: relative;
+}
+
+div.product-section .mdx-photo {
+  position: relative;
+  border-top: 1px dashed var(--border-color);
+  border-image: repeating-linear-gradient(90deg, var(--border-color), var(--border-color) 4px, transparent 4px, transparent 12px) 1;
+  border-right: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.border-label {
+  position: absolute;
+  top: -24px; /* Поднимаем надпись выше бордера */
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--border-color);
+  display: none;
+}
+
+/* Показываем только внутри product-section или при наличии класса .visible */
+div.product-section .border-label {
+  display: block; /* Показываем только в product-section */
+}
+
 .mdx-gallery-item,
 .mdx-video-gallery-item {
   background: var(--item-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
   overflow: hidden;
   position: relative;
 }
+
 .mdx-photo > img,
 .mdx-gallery-item > img,
 .mdx-video-gallery-item > img {
