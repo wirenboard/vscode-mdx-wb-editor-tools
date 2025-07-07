@@ -273,7 +273,8 @@ export class MarkdownRenderer {
         additionalComponents += this.createComponentFromFrontmatter(           
           'images',
           'gallery',
-          attributes.images
+          attributes.images,
+          'Фото'
         );
         delete attributes.images;
       }
@@ -282,7 +283,8 @@ export class MarkdownRenderer {
         additionalComponents += this.createComponentFromFrontmatter(
           'video', 
           'video-gallery',          
-          attributes.video
+          attributes.video,
+          'Видео'
         );
         delete attributes.video;
       }
@@ -306,14 +308,15 @@ export class MarkdownRenderer {
     );
   }
 
-  private createComponentFromFrontmatter(
+  private createComponentFromFrontmatter(    
     attributeName: string, 
     componentName: string,    
-    value: string
+    value: string,
+    title: string = attributeName,
   ): string {
     try {
       const data = JSON.parse(value);
-      return `\n<div class="frontmatter-${attributeName}">\n:${componentName}{:data='${JSON.stringify(data)}'}\n</div>\n`;
+      return `<h2>${title}\n</h2>\n<div class="frontmatter-${attributeName}">\n:${componentName}{:data='${JSON.stringify(data)}'}\n</div>\n`;
     } catch (error) {
       console.error(`Frontmatter attribute "${attributeName}" error:`, error);
       return this.wrapError(
