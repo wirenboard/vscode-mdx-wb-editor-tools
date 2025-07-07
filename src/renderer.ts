@@ -214,6 +214,39 @@ export class MarkdownRenderer {
           error: null,
         });
       },
+
+      include: (attrs, webview, docUri) => {
+        try {
+          const includePath = attrs.path;
+          if (!includePath) {
+            return this.wrapError("Include path is missing");
+          }
+      
+          // Получаем абсолютный путь к корню проекта из текущего файла
+          const docPath = docUri.fsPath;
+          const projectRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+          if (!projectRoot) {
+            return this.wrapError("Workspace root not found");
+          }
+      
+          // Строим абсолютный путь к инклюду
+          const absPath = path.join(
+            projectRoot,
+            "content",
+            docPath.split(path.sep).includes("ru") ? "ru" : "en", // Определяем язык
+            ...includePath.replace(/^\//, "").split("/").filter(Boolean)
+          ) + ".md";
+      
+          if (!fs.existsSync(absPath)) {
+            return this.wrapError(`Include file not found: ${absPath}`);
+          }
+      
+          const content = fs.readFileSync(absPath, "utf8");
+          return this.processMarkdownWithComponents(content, webview, docUri);
+        } catch (error) {
+          return this.wrapError(`Include error: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }    
     };
   }
 
@@ -377,4 +410,5 @@ export class MarkdownRenderer {
     }
   }
 }
+
 
