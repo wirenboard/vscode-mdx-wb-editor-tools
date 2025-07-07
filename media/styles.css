@@ -251,7 +251,7 @@ body {
   .float-left,
   .float-right {
     float: none!important;    
-    width: 60%!important;
+    width: 100%!important;
     margin: 0 0 var(--grid-margin)!important;
   }
 

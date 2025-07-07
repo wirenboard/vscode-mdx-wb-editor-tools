@@ -200,13 +200,13 @@ export class MarkdownRenderer {
           error: null,
         });
       },
-  
+
       info: (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().info({
           content: attrs.content || "",
           error: null,
         });
-      },      
+      },
     };
   }
 
@@ -270,21 +270,21 @@ export class MarkdownRenderer {
       const attributes = { ...frontmatterData.attributes };
 
       if (attributes.images) {
-        additionalComponents += this.createComponentFromFrontmatter(           
-          'images',
-          'gallery',
+        additionalComponents += this.createComponentFromFrontmatter(
+          "images",
+          "gallery",
           attributes.images,
-          'Фото'
+          "Фото"
         );
         delete attributes.images;
       }
-    
+
       if (attributes.video) {
         additionalComponents += this.createComponentFromFrontmatter(
-          'video', 
-          'video-gallery',          
+          "video",
+          "video-gallery",
           attributes.video,
-          'Видео'
+          "Видео"
         );
         delete attributes.video;
       }
@@ -293,26 +293,25 @@ export class MarkdownRenderer {
         let useCases: string[];
         if (Array.isArray(attributes.use_cases)) {
           useCases = attributes.use_cases;
-        } else if (attributes.use_cases.startsWith('[')) {
+        } else if (attributes.use_cases.startsWith("[")) {
           useCases = JSON.parse(attributes.use_cases);
         } else {
           useCases = attributes.use_cases
             .split(/\n|,/)
-            .map(item => item.replace(/^[\s-]*|[\s-]*$/g, ''))
-            .filter(item => item);
+            .map((item) => item.replace(/^[\s-]*|[\s-]*$/g, ""))
+            .filter((item) => item);
         }
 
-        const currentDir = vscode.Uri.joinPath(documentUri, '../..');
-        const solutionsDir = vscode.Uri.joinPath(currentDir, 'solutions');
+        const currentDir = vscode.Uri.joinPath(documentUri, "../..");
+        const solutionsDir = vscode.Uri.joinPath(currentDir, "solutions");
 
-        attributes.use_cases = useCases.map((caseName: string) => {
+        attributes.use_cases = `<ul>${useCases.map((caseName: string) => {
           const trimmedCaseName = caseName.trim();
           const filePath = vscode.Uri.joinPath(solutionsDir, `${trimmedCaseName}.md`);
           const fileExists = fs.existsSync(filePath.fsPath);
           const colorClass = fileExists ? 'valid-use-case' : 'invalid-use-case';
-          return `<span class="${colorClass}">${trimmedCaseName}</span>`;
-        }).join(', <br>').replace(/[\r\n]+\s*,\s*|,\s*[\r\n]+/g, ', '); 
-        // Удаляет переносы строк, заменяя их пробелами, затем форматирует запятые
+          return `<li><span class="${colorClass}">${trimmedCaseName}</span></li>`;
+        }).join('')}</ul>`;
       }
 
       console.log("Generated additional components:", additionalComponents);
@@ -334,15 +333,17 @@ export class MarkdownRenderer {
     );
   }
 
-  private createComponentFromFrontmatter(    
-    attributeName: string, 
-    componentName: string,    
+  private createComponentFromFrontmatter(
+    attributeName: string,
+    componentName: string,
     value: string,
-    title: string = attributeName,
+    title: string = attributeName
   ): string {
     try {
       const data = JSON.parse(value);
-      return `<h2>${title}\n</h2>\n<div class="frontmatter-${attributeName}">\n:${componentName}{:data='${JSON.stringify(data)}'}\n</div>\n`;
+      return `<h2>${title}\n</h2>\n<div class="frontmatter-${attributeName}">\n:${componentName}{:data='${JSON.stringify(
+        data
+      )}'}\n</div>\n`;
     } catch (error) {
       console.error(`Frontmatter attribute "${attributeName}" error:`, error);
       return this.wrapError(
