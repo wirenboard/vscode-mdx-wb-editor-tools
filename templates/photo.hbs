@@ -1,7 +1,10 @@
 <div class="mdx-photo {{floatClass}}" {{#if width}}style="width:{{width}}"{{/if}}>
   <div class="media-wrapper">
+    <div class="border-label {{#if showBorderLabel}}visible{{/if}}">контент картинки ближе к этой линии</div>
     {{#if src}}
+    <div class="hidden-overflow">
       <img src="{{src}}" alt="{{alt}}" {{#if width}}style="width:{{width}}"{{/if}}>
+    </div>      
     {{else}}
       <div class="mdx-photo-placeholder" style="width: 100%; height: 100%"></div>
     {{/if}}

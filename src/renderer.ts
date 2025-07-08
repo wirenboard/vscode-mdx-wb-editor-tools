@@ -233,7 +233,7 @@ export class MarkdownRenderer {
           const absPath = path.join(
             projectRoot,
             "content",
-            docPath.split(path.sep).includes("ru") ? "ru" : "en", // Определяем язык
+            docPath.split(path.sep).includes("ru") ? "ru" : "en",
             ...includePath.replace(/^\//, "").split("/").filter(Boolean)
           ) + ".md";
       
@@ -242,7 +242,8 @@ export class MarkdownRenderer {
           }
       
           const content = fs.readFileSync(absPath, "utf8");
-          return this.processMarkdownWithComponents(content, webview, docUri);
+          // Передаем путь к инклюду как базовый для обработки медиа
+          return this.processMarkdownWithComponents(content, webview, vscode.Uri.file(absPath));
         } catch (error) {
           return this.wrapError(`Include error: ${error instanceof Error ? error.message : String(error)}`);
         }

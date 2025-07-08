@@ -121,6 +121,10 @@ body {
   position: relative;
 }
 
+.hidden-overflow{
+  overflow: hidden;  
+}
+
 div.product-section .mdx-photo {
   position: relative;
   border-top: 1px dashed var(--border-color);
@@ -132,8 +136,8 @@ div.product-section .mdx-photo {
 
 .border-label {
   position: absolute;
-  top: -24px; /* Поднимаем надпись выше бордера */
-  left: 50%;
+  top: -20px; /* Поднимаем надпись выше бордера */
+  left: 30%;
   transform: translateX(-50%);
   background: white;
   padding: 0 8px;
@@ -170,7 +174,7 @@ div.product-section .border-label {
 /* === Видео-обёртка === */
 .media-wrapper {
   width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
   position: relative;
   border-radius: var(--border-radius);
 }
