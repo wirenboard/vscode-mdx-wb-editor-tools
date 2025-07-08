@@ -50,10 +50,9 @@ body {
 .mdx-gallery-caption,
 .mdx-photo-caption {
   display: block;
-  border-top: 1px solid var(--border-color);
   font: italic 0.9em sans-serif;
   padding: 4px;
-  margin: 0 4px 0;
+  margin: 4px 6px 4px;
   color: #28292f;
 }
 
@@ -288,9 +287,13 @@ div.product-section .border-label {
   .mdx-photo,
   .float-left,
   .float-right {
-    float: none!important;    
+    display: block;
+    margin: 0 auto var(--grid-margin);
+  }
+
+  div.product-section .mdx-photo{
     width: 100%!important;
-    margin: 0 0 var(--grid-margin)!important;
+
   }
 
   .media-wrapper img,
