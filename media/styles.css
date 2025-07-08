@@ -180,6 +180,57 @@ div.product-section .border-label {
   transform: scale(1.05);
 }
 
+/* === Спойлер === */
+/* контейнер спойлера */
+details {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1em;
+  /* background: #fafafa; */
+  margin-bottom: 1em;
+}
+
+/* заголовок */
+details summary {
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none;
+  outline: none;
+}
+
+/* убираем дефолтную стрелку WebKit */
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ваша стрелка в тексте */
+details summary::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: .5em;
+  transition: transform .2s ease;
+}
+
+/* дополнительная явная стрелка */
+.arrow {
+  display: inline-block;
+  margin-right: .5em;
+  transition: transform .2s ease;
+}
+
+/* поворот всех стрелок при открытии */
+details[open] summary::before,
+details[open] .arrow {
+  transform: rotate(90deg);
+}
+
+/* отступ контента */
+details p,
+details ul {
+  margin: .5em 0 0 1.5em;
+}
+
+
 /* === Видео-обёртка === */
 .media-wrapper {
   width: 100%;
@@ -256,10 +307,7 @@ div.product-section .border-label {
 
 /* === Товары === */
 .description-component,
-.info-component,
-.spoiler-component,
-.summary-component,
-.content-component {
+.info-component {
   position: relative;
   border: 1px solid #333;
   padding: 32px 20px 10px;
@@ -267,10 +315,7 @@ div.product-section .border-label {
   box-sizing: border-box;
 }
 .description-component-label,
-.info-component-label,
-.spoiler-component-label,
-.summary-component-label,
-.content-component-label {
+.info-component-label {
   position: absolute;
   top: 0; left: 20px;
   transform: translateY(-50%);

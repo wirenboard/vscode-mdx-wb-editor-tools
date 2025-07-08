@@ -255,11 +255,18 @@ export class MarkdownRenderer {
         });
       },
       summary: (attrs, webview, docUri) => {
+        // Полностью ручная обработка контента без markdown-it
+        const content = attrs.content 
+          ? attrs.content
+              .replace(/<\/?p>/g, '') // Удаляем все теги p
+              .trim()
+          : "";
+          
         return this.templateManager.getTemplates().summary({
-          content: attrs.content || "",
+          content,
           error: null,
         });
-      }, 
+      },
       content: (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().content({
           content: attrs.content || "",

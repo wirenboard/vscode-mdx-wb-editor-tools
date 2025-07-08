@@ -201,6 +201,25 @@
           }
         }
       }
-    }         
+    },
+    "WB Component Spoiler": {
+      "prefix": "wbs-comp-spoiler",
+      "body": [
+        "::spoiler",
+        "",  
+        "#summary",
+        "Заголовок",   
+        "",
+        "#content",     
+        "Любой контент описывающий подробности ",  
+        "",  
+        "::"
+      ],
+      "description": "Раскрывающийся блок",
+      "docs": {
+        "attributes": {          
+        }
+      }
+    }             
   }
   
