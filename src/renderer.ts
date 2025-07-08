@@ -247,7 +247,25 @@ export class MarkdownRenderer {
         } catch (error) {
           return this.wrapError(`Include error: ${error instanceof Error ? error.message : String(error)}`);
         }
-      }    
+      },
+      spoiler: (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().spoiler({
+          content: attrs.content || "",
+          error: null,
+        });
+      },
+      summary: (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().summary({
+          content: attrs.content || "",
+          error: null,
+        });
+      }, 
+      content: (attrs, webview, docUri) => {
+        return this.templateManager.getTemplates().content({
+          content: attrs.content || "",
+          error: null,
+        });
+      },     
     };
   }
 
@@ -264,7 +282,7 @@ export class MarkdownRenderer {
       } else {
         const renderer = this.componentRenderers[node.componentName];
         if (!renderer) {
-          return this.wrapError(`Unknown component: ${node.componentName}`);
+          return this.wrapError(`Render not found for component: ${node.componentName}`);
         }
   
         // Рекурсивно обрабатываем детей для блочных компонентов

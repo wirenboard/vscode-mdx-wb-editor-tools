@@ -77,9 +77,20 @@ body {
 }
 .frontmatter-cover {
   display: block;
-  max-width: 120px;
+  width: 250px;
+  height: 160px;
+  /* max-width: 120px; */
   border-radius: 4px;
   object-fit: cover;
+}
+
+.frontmatter-logo{  
+  display: block;
+  max-height: 70px;
+  max-width: 100%;
+  /* max-width: 120px; */
+  border-radius: 4px;
+  /* object-fit: cover; */
 }
 
 /* мобильная перестройка таблицы */
@@ -105,10 +116,9 @@ body {
     font-weight: 600;
     margin-right: 1rem;
   }
-  .frontmatter-cover {
+  .frontmatter-cover,
+  .frontmatter-logo {
     max-width: 40%;
-    object-fit: contain;
-    margin-left: auto;
   }
 
 }
@@ -246,7 +256,10 @@ div.product-section .border-label {
 
 /* === Товары === */
 .description-component,
-.info-component {
+.info-component,
+.spoiler-component,
+.summary-component,
+.content-component {
   position: relative;
   border: 1px solid #333;
   padding: 32px 20px 10px;
@@ -254,7 +267,10 @@ div.product-section .border-label {
   box-sizing: border-box;
 }
 .description-component-label,
-.info-component-label {
+.info-component-label,
+.spoiler-component-label,
+.summary-component-label,
+.content-component-label {
   position: absolute;
   top: 0; left: 20px;
   transform: translateY(-50%);

@@ -12,7 +12,9 @@
         <td data-label="{{@key}}">
           {{#if (isCover @key)}}
             <img src="{{this}}" alt="Cover image" class="frontmatter-cover">
-          {{else}}
+          {{else if (isLogo @key)}}
+            <img src="{{this}}" alt="Logo" class="frontmatter-logo">
+          {{else}}          
             {{{this}}}
           {{/if}}
         </td>
