@@ -184,6 +184,23 @@
         "attributes": {          
         }
       }
-    }     
+    },
+    "WB Component Include": {
+      "prefix": "wbs-comp-include",
+      "body": [
+        ":include{",
+        "  path=\"${1:URL}\"",
+        "}"
+      ],
+      "description": "Компонент инклюд для включения других файлов.",
+      "docs": {
+        "attributes": {
+          "path": {
+            "description": "Путь к файлу с текстом от локали (папок ru/en, они не включаются) и без расширения (например, /catalog/includes/quality-control)",
+            "default": ""
+          }
+        }
+      }
+    }         
   }
   
