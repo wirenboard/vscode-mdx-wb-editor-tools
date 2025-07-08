@@ -14,6 +14,10 @@ export class TemplateManager {
     videoPlayer: Handlebars.TemplateDelegate;
     videoGallery: Handlebars.TemplateDelegate;
     frontmatter: Handlebars.TemplateDelegate;
+    product: Handlebars.TemplateDelegate;
+    productSection: Handlebars.TemplateDelegate;
+    description: Handlebars.TemplateDelegate;
+    info: Handlebars.TemplateDelegate;
   };
 
   constructor(context: vscode.ExtensionContext) {
@@ -26,12 +30,16 @@ export class TemplateManager {
     Handlebars.registerHelper('isCover', (key) => ['cover', 'logo'].includes(String(key)));
 
     this.templates = {
-      main: this.compileTemplate(path.join(templatesDir, 'main.html')),
-      photo: this.compileTemplate(path.join(templatesDir, 'photo.html')),
-      gallery: this.compileTemplate(path.join(templatesDir, 'gallery.html')),
-      videoPlayer: this.compileTemplate(path.join(templatesDir, 'video-player.html')),
-      videoGallery: this.compileTemplate(path.join(templatesDir, 'video-gallery.html')),
-      frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.html'))
+      main: this.compileTemplate(path.join(templatesDir, 'main.hbs')),
+      photo: this.compileTemplate(path.join(templatesDir, 'photo.hbs')),
+      gallery: this.compileTemplate(path.join(templatesDir, 'gallery.hbs')),
+      videoPlayer: this.compileTemplate(path.join(templatesDir, 'video-player.hbs')),
+      videoGallery: this.compileTemplate(path.join(templatesDir, 'video-gallery.hbs')),
+      frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.hbs')),
+      product: this.compileTemplate(path.join(templatesDir, 'product.hbs')),
+      productSection: this.compileTemplate(path.join(templatesDir, 'product-section.hbs')),
+      description: this.compileTemplate(path.join(templatesDir, 'description.hbs')),
+      info: this.compileTemplate(path.join(templatesDir, 'info.hbs'))
     };
   }
 

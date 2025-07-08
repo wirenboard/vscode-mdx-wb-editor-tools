@@ -121,6 +121,86 @@
           }
         }
       }
-    }
+    },
+    "WB Component Product": {
+      "prefix": "wbs-comp-product",
+      "body": [
+        "::product",
+        "",
+        "#description",
+        "",
+        "#info",
+        "",
+        "::product-section{title=\"Название секции 1\"}",
+        "",
+        ":photo{",
+        "  src=\"wb-msw-v4/hardware.png\"",
+        "  float=\"right\"",
+        "  width=\"500px\"", 
+        "}",   
+        "",
+        "Текст секции 1",
+        "",     
+        "::",
+        "",
+        "::product-section{title=\"Название секции 2\"}",
+        "",
+        ":photo{",
+        "  src=\"wb-msw-v4/sensors.png\"",
+        "  float=\"right\"",
+        "  width=\"500px\"", 
+        "}",   
+        "",
+        "Текст секции 2",
+        "",         
+        "",
+        "::",        
+        "",
+        "::"
+      ],
+      "description": "Секция описания товара",
+      "docs": {
+        "attributes": {          
+        }
+      }
+    },
+    "WB Component Product Section": {
+      "prefix": "wbs-comp-product-section",
+      "body": [
+        "::product-section{title=\"Название секции 1\"}",
+        "",
+        ":photo{",
+        "  src=\"wb-msw-v4/hardware.png\"",
+        "  float=\"right\"",
+        "  width=\"500px\"",        
+        "}",   
+        "",
+        "Текст секции 1",
+        "",     
+        "::"
+      ],
+      "description": "Секция характеристик товара",
+      "docs": {
+        "attributes": {          
+        }
+      }
+    },
+    "WB Component Include": {
+      "prefix": "wbs-comp-include",
+      "body": [
+        ":include{",
+        "  path=\"${1:URL}\"",
+        "}"
+      ],
+      "description": "Компонент инклюд для включения других файлов.",
+      "docs": {
+        "attributes": {
+          "path": {
+            "description": "Путь к файлу с текстом от локали (папок ru/en, они не включаются) и без расширения (например, /catalog/includes/quality-control)",
+            "default": ""
+          }
+        }
+      }
+    }         
   }
   

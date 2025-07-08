@@ -9,11 +9,11 @@
   <tbody>
     <tr>
       {{#each items}}
-        <td>
+        <td data-label="{{@key}}">
           {{#if (isCover @key)}}
             <img src="{{this}}" alt="Cover image" class="frontmatter-cover">
           {{else}}
-            {{this}}
+            {{{this}}}
           {{/if}}
         </td>
       {{/each}}

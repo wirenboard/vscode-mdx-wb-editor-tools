@@ -93,7 +93,7 @@ data='[
 
 #### 2. HTML-шаблон (Handlebars)
 
-Создаем `templates/myComponent.html`:
+Создаем `templates/myComponent.hbs`:
 
 ```hbs
 <div class="mdx-my-component">
@@ -119,7 +119,7 @@ data='[
 
     this.templates = {
       // ... existing templates ...
-      myComponent: this.compileTemplate(path.join(templatesDir, 'myComponent.html'))
+      myComponent: this.compileTemplate(path.join(templatesDir, 'myComponent.hbs'))
     };
 ```
 

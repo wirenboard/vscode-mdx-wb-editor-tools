@@ -26,7 +26,7 @@ export class WBCompletionProvider implements vscode.CompletionItemProvider {
             .map(({ sn, name }) => {
                 // 3) Формируем вставку без ведущего ":", чтобы не дублировать
                 const raw = Array.isArray(sn.body) ? sn.body.join('\n') : sn.body;
-                const insertText = raw.replace(/^:+/, '');
+                const insertText = raw.replace(/^:/, '');
 
                 const item = new vscode.CompletionItem(
                     name,
