@@ -77,9 +77,20 @@ body {
 }
 .frontmatter-cover {
   display: block;
-  max-width: 120px;
+  width: 250px;
+  height: 160px;
+  /* max-width: 120px; */
   border-radius: 4px;
   object-fit: cover;
+}
+
+.frontmatter-logo{  
+  display: block;
+  max-height: 70px;
+  max-width: 100%;
+  /* max-width: 120px; */
+  border-radius: 4px;
+  /* object-fit: cover; */
 }
 
 /* мобильная перестройка таблицы */
@@ -105,10 +116,9 @@ body {
     font-weight: 600;
     margin-right: 1rem;
   }
-  .frontmatter-cover {
+  .frontmatter-cover,
+  .frontmatter-logo {
     max-width: 40%;
-    object-fit: contain;
-    margin-left: auto;
   }
 
 }
@@ -169,6 +179,57 @@ div.product-section .border-label {
 .mdx-gallery-item:hover > img {
   transform: scale(1.05);
 }
+
+/* === Спойлер === */
+/* контейнер спойлера */
+details {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1em;
+  /* background: #fafafa; */
+  margin-bottom: 1em;
+}
+
+/* заголовок */
+details summary {
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none;
+  outline: none;
+}
+
+/* убираем дефолтную стрелку WebKit */
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ваша стрелка в тексте */
+details summary::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: .5em;
+  transition: transform .2s ease;
+}
+
+/* дополнительная явная стрелка */
+.arrow {
+  display: inline-block;
+  margin-right: .5em;
+  transition: transform .2s ease;
+}
+
+/* поворот всех стрелок при открытии */
+details[open] summary::before,
+details[open] .arrow {
+  transform: rotate(90deg);
+}
+
+/* отступ контента */
+details p,
+details ul {
+  margin: .5em 0 0 1.5em;
+}
+
 
 /* === Видео-обёртка === */
 .media-wrapper {

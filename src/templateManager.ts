@@ -18,6 +18,9 @@ export class TemplateManager {
     productSection: Handlebars.TemplateDelegate;
     description: Handlebars.TemplateDelegate;
     info: Handlebars.TemplateDelegate;
+    spoiler: Handlebars.TemplateDelegate;
+    summary: Handlebars.TemplateDelegate;
+    content: Handlebars.TemplateDelegate;
   };
 
   constructor(context: vscode.ExtensionContext) {
@@ -27,7 +30,8 @@ export class TemplateManager {
       return new Handlebars.SafeString(md.render(text));
     });
     Handlebars.registerHelper('isTitle', (key) => key === 'title');
-    Handlebars.registerHelper('isCover', (key) => ['cover', 'logo'].includes(String(key)));
+    Handlebars.registerHelper('isCover', (key) => ['cover'].includes(String(key)));
+    Handlebars.registerHelper('isLogo', (key) => ['logo'].includes(String(key)));
 
     this.templates = {
       main: this.compileTemplate(path.join(templatesDir, 'main.hbs')),
@@ -39,7 +43,10 @@ export class TemplateManager {
       product: this.compileTemplate(path.join(templatesDir, 'product.hbs')),
       productSection: this.compileTemplate(path.join(templatesDir, 'product-section.hbs')),
       description: this.compileTemplate(path.join(templatesDir, 'description.hbs')),
-      info: this.compileTemplate(path.join(templatesDir, 'info.hbs'))
+      info: this.compileTemplate(path.join(templatesDir, 'info.hbs')),
+      spoiler: this.compileTemplate(path.join(templatesDir, 'spoiler.hbs')),
+      summary: this.compileTemplate(path.join(templatesDir, 'summary.hbs')),
+      content: this.compileTemplate(path.join(templatesDir, 'content.hbs'))
     };
   }
 
