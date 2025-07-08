@@ -189,7 +189,10 @@ div.product-section .border-label {
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-.mdx-video-placeholder {
+.mdx-video-placeholder,
+.mdx-photo-placeholder {
+  min-height: 100px;
+  min-width: 100px;
   background: var(--placeholder-bg);
 }
 .media-wrapper:hover img {
