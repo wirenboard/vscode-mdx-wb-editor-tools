@@ -3,24 +3,24 @@
     "prefix": "wbs-md-article",
     "body": [
       "---",
-      "title: \"${1:Лаконичный заголовок}\"",
-      "cover: \"${2:my_article/my_article.jpg}\"",
-      "date: \"${3:2023-11-15}\"",
-      "category: \"${4:educational}\"",
-      "author: \"${5:Команда Wiren Board}\"",
+      "title: ${1:Лаконичный заголовок}",
+      "cover: ${2:my_article/my_article.jpg}",
+      "date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
+      "category: ${3:educational}",
+      "author: ${4:Команда Wiren Board}",
       "---",
       "",
-      "## ${6:Заголовок}",
-      "${7:Текст статьи}",
+      "## ${5:Заголовок}",
+      "${6:Текст статьи}",
       "",
-      "### ${8:Подзаголовок}",
-      "${9:Дополнительный текст}",
+      "### ${7:Подзаголовок}",
+      "${8:Дополнительный текст}",
       "",
-      "## ${10:Заголовок}",
-      "${11:Текст статьи}",
+      "## ${9:Заголовок}",
+      "${10:Текст статьи}",
       "",
-      "### ${12:Подзаголовок}",
-      "${13:Дополнительный текст}"
+      "### ${11:Подзаголовок}",
+      "${12:Дополнительный текст}"
     ],
     "description": "Шаблон статьи с ссылками и структурой из 2 разделов",
     "docs": {
@@ -51,10 +51,10 @@
     "prefix": "wbs-md-article-link",
     "body": [
       "---",
-      "title: \"${1:Заголовок}\"",
-      "cover: \"${2:my_article/my_article.jpg}\"",
-      "date: \"${3:2023-11-15}\"",
-      "category: \"${4:educational}\"",
+      "title: ${1:Заголовок}",
+      "cover: ${2:my_article/my_article.jpg}",
+      "date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
+      "category: ${3:educational}",
       "---"
     ],
     "description": "Укороченный шаблон статьи (без author)",
@@ -64,17 +64,17 @@
     "prefix": "wbs-md-solution",
     "body": [
       "---",
-      "title: \"${1:Заголовок}\"",
-      "cover: \"${2:my_solution/my_solution.jpg}\"",
-      "date: \"${3:2024-01-21}\"",
-      "category: \"${4:shops_restaurants_monitoring}\"",
+      "title: ${1:Заголовок}",
+      "cover: ${2:my_solution/my_solution.jpg}",
+      "date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
+      "category: ${3:shops_restaurants_monitoring}",
       "---",
       "",
       "[Список категорий для решений](../../../common/solution_categories.ts)",
       "[Справочник по синтаксису](../../../doc/syntax.md)",
       "",
-      "## ${5:О компании}",
-      "${6:Описание компании}"
+      "## ${4:О компании}",
+      "${5:Описание компании}"
     ],
     "description": "Шаблон решения (аналог статьи)",
     "docs": {
@@ -101,14 +101,14 @@
     "prefix": "wbs-md-integrator",
     "body": [
       "---",
-      "district: \"${1|volga,msk,spb,ural,siberia,far_east|}\"",
-      "tags: \"${2|smart_home,real_estate,automation,retail,data_center|}\"",
+      "district: ${1|volga,msk,spb,ural,siberia,far_east|}",
+      "tags: ${2|smart_home,real_estate,automation,retail,data_center|}",
       "coordinates: [${3:55.824274}, ${4:49.196404}]",
-      "title: \"${5:Название интегратора}\"",
-      "logo: \"${6:my_integrator/logo.png}\"",
-      "phone: \"${7:74993227329}\"",
-      "website: \"${8:https://example.com}\"",
-      "email: \"${9:contact@example.com}\"",
+      "title: ${5:Название интегратора}",
+      "logo: ${6:my_integrator/logo.png}",
+      "phone: ${7:74993227329}",
+      "website: ${8:https://example.com}",
+      "email: ${9:contact@example.com}",
       "priority: ${6:1}",
       "---",
       "",
@@ -167,11 +167,11 @@
     "prefix": "wbs-md-partner",
     "body": [
       "---",
-      "title: \"${1:Название партнёра}\"",
-      "logo: \"${2:my_partner/logo.webp}\"",
+      "title: ${1:Название партнёра}",
+      "logo: ${2:my_partner/logo.webp}",
       "phone: ${3:[74993227329]}",
-      "website: \"${4:https://example.com}\"",
-      "email: \"${5:contact@example.com}\"",
+      "website: ${4:https://example.com}",
+      "email: ${5:contact@example.com}",
       "priority: ${6:1}",
       "---",
       "",
@@ -206,7 +206,7 @@
     "prefix": "wbs-md-page",
     "body": [
       "---",
-      "title: \"${1:Лаконичный заголовок}\"",
+      "title: ${1:Лаконичный заголовок}",
       "---",
       "",
       "## ${6:Заголовок}",
@@ -235,34 +235,34 @@
     "prefix": "wbs-md-product",
     "body": [
       "---",
-      "article: \"${1:WB-MSW4 }\"",
-      "name: \"${2:WB-MSW v.4}\"",
-      "type: \"${4:Настенный комбинированный датчик}\"",
-      "title: \"${4:Настенный комбинированный датчик c RS-485, Modbus RTU}\"",
-      "sub_title: \"${5:Температура, влажность, освещённость, шум, уровень CO₂ и VOC}\"",
-      "cover: \"${6:wb-msw-v4/wb-msw-v4-main.png}\"",
-      "documentation: \"${7:https://wirenboard.com/wiki/WB-MSW_v.4_Modbus_Sensor}\"",
-      "meta: \"${8:SEO описание страницы}\"",
-      "keywords: \"${9:SEO ключевые слова через запятую}\"",
+      "article: ${1:WB-MSW4 }",
+      "name: ${2:WB-MSW v.4}",
+      "type: ${4:Настенный комбинированный датчик}",
+      "title: ${4:Настенный комбинированный датчик c RS-485, Modbus RTU}",
+      "sub_title: ${5:Температура, влажность, освещённость, шум, уровень CO₂ и VOC}",
+      "cover: ${6:wb-msw-v4/wb-msw-v4-main.png}",
+      "documentation: ${7:https://wirenboard.com/wiki/WB-MSW_v.4_Modbus_Sensor}",
+      "meta: ${8:SEO описание страницы}",
+      "keywords: ${9:SEO ключевые слова через запятую}",
       "images: [",
-      "  [\"${10:wb-msw-v4/wb-msw-v4-1.png}\"],",
-      "  [\"${11:wb-msw-v4/wb-msw-v4-2.png}\"]",
+      "  [${10:wb-msw-v4/wb-msw-v4-1.png}],",
+      "  [${11:wb-msw-v4/wb-msw-v4-2.png}]",
       "]",
       "video: [",
-      "  [\"${12:https://peertube.wirenboard.com/videolink}\"],",
-      "  [\"${13:https://peertube.wirenboard.com/videolink}\"]",
+      "  [${12:https://peertube.wirenboard.com/videolink}],",
+      "  [${13:https://peertube.wirenboard.com/videolink}]",
       "]",
-      "use_cases: \"${14:[liten_magnit, techsensor_module_cafe, rekota_hotel_vertical]}\"",
+      "use_cases: ${14:[liten_magnit, techsensor_module_cafe, rekota_hotel_vertical]}",
       "---",
       "::product",
       "#description",
       "${15:Описание самого товара, которое отображается рядом с ценой}",
       "#info",
       "## Основные характеристики",
-      "::product-section{title=\"${16:Название секции 1}\"}",
+      "::product-section{title=${16:Название секции 1}}",
       "${17:Содержимое секции 1}",
       "::",
-      "::product-section{title=\"${18:Название секции 2}\"}",
+      "::product-section{title=${18:Название секции 2}}",
       "${19:Содержимое секции 2}",
       "::",      
       "::"
@@ -299,7 +299,7 @@
           "description": "SEO — ключевые слова через запятую, описывающие товар"
         },
         "images": {
-          "description": "Массив из ссылок на фото товара [[\"wb-msw-v4/wb-msw-v4-1.png\"], [\"wb-msw-v4/wb-msw-v4-2.png\"]]"
+          "description": "Массив из ссылок на фото товара [[wb-msw-v4/wb-msw-v4-1.png], [wb-msw-v4/wb-msw-v4-2.png]]"
         },
         "video": {
           "description": "Массив из ссылок на видео товара. PeerTube для России и YouTube для всего остального мира"
@@ -309,5 +309,38 @@
         }
       }
     }
-  }
+  },
+  "WB Video Template": {
+    "prefix": "wbs-md-video",
+    "body": [
+      "---",
+      "title: ${1:Название видео | Автор}",
+      "url: ${2}",
+      "date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
+      "cover: ${3:my_video/my_video.jpg}",
+      "category: ${4:educational}",      
+      "---"
+    ],
+    "description": "Шаблон записи о видеоролике",
+    "docs": {
+      "path": "video/**",
+      "attributes": {
+        "title": {
+          "description": "Название видео | Автор"
+        },
+        "url": {
+          "description": "URL видео. PeerTube для русского сайта и YouTube для английского."
+        },
+        "cover": {
+          "description": "Путь к обложке ролика (например, my_video/my_video.jpg). Указано — видео откроется в новом окне. Не указано — в страницу будет встроен плеер."
+        },
+        "date": {
+          "description": "Дата публикации (YYYY-MM-DD, например, 2023-01-21)"
+        },
+        "category": {
+          "description": "Категория видео, брать отсюда: https://github.com/wirenboard/website/blob/main/common/video_categories.ts"
+        }
+      }
+    }
+  }  
 }
