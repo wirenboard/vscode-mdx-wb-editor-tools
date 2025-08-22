@@ -101,3 +101,36 @@ jobs:
           asset_path: ${{ needs.build.outputs.vsix-path }}
           asset_name: ${{ needs.build.outputs.vsix-name }}
           asset_content_type: application/octet-stream
+
+# ↓ Добавь после job "release"
+  publish:
+    if: github.event_name == 'push'
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.vsix-name }}
+          path: dist/
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install CLIs
+        run: npm i -g vsce ovsx
+
+      # Публикация в Visual Studio Marketplace
+      - name: Publish to VS Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          # Публикуем уже собранный артефакт
+          vsce publish --pat "$VSCE_PAT" --packagePath "dist/${{ needs.build.outputs.vsix-name }}"
+
+      # Публикация в Open VSX
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          ovsx publish "dist/${{ needs.build.outputs.vsix-name }}" -p "$OVSX_PAT"
