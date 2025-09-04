@@ -245,25 +245,35 @@
       "meta: ${8:SEO описание страницы}",
       "keywords: ${9:SEO ключевые слова через запятую}",
       "images: [",
-      "  [${10:wb-msw-v4/wb-msw-v4-1.png}],",
-      "  [${11:wb-msw-v4/wb-msw-v4-2.png}]",
+      "  [\"${10:wb-msw-v4/wb-msw-v4-1.png}\"],",
+      "  [\"${11:wb-msw-v4/wb-msw-v4-2.png}\"]",
       "]",
       "video: [",
-      "  [${12:https://peertube.wirenboard.com/videolink}],",
-      "  [${13:https://peertube.wirenboard.com/videolink}]",
+      "  [\"${12:https://peertube.wirenboard.com/videolink}\"],",
+      "  [\"${13:https://peertube.wirenboard.com/videolink}\"]",
       "]",
-      "use_cases: ${14:[liten_magnit, techsensor_module_cafe, rekota_hotel_vertical]}",
+      "use_cases: ${14:[\"liten_magnit\", \"techsensor_module_cafe\", \"rekota_hotel_vertical\"]}",
       "---",
       "::product",
       "#description",
       "${15:Описание самого товара, которое отображается рядом с ценой}",
       "#info",
       "## Основные характеристики",
-      "::product-section{title=\"${16:Название секции 1}\"}",
-      "${17:Содержимое секции 1}",
+      "::product-section{title=\"Название секции 1\"}",
+      ":photo{",
+      "  src=\"URL\"",
+      "  width=\"500px\"",
+      "  float=\"right\"",
+      "}",      
+      "Содержимое секции 1",
       "::",
-      "::product-section{title=\"${18:Название секции 2}\"}",
-      "${19:Содержимое секции 2}",
+      "::product-section{title=\"Название секции 2\"}",
+      ":photo{",
+      "  src=\"URL\"",
+      "  width=\"500px\"",
+      "  float=\"right\"",
+      "}",        
+      "Содержимое секции 2",
       "::",      
       "::"
     ],
@@ -299,13 +309,13 @@
           "description": "SEO — ключевые слова через запятую, описывающие товар"
         },
         "images": {
-          "description": "Массив из ссылок на фото товара [[wb-msw-v4/wb-msw-v4-1.png], [wb-msw-v4/wb-msw-v4-2.png]]"
+          "description": "Массив из ссылок на фото товара [[\"wb-msw-v4/wb-msw-v4-1.png\"], [\"wb-msw-v4/wb-msw-v4-2.png\"]]"
         },
         "video": {
           "description": "Массив из ссылок на видео товара. PeerTube для России и YouTube для всего остального мира"
         },
         "use_cases": {
-          "description": "Массив из 3-6 названий файлов solutions где используется оборудование без расширения md: [liten_magnit, techsensor_module_cafe]"
+          "description": "Массив из 3-6 названий файлов solutions где используется оборудование без расширения md: [\"liten_magnit\", \"techsensor_module_cafe\"]"
         }
       }
     }
