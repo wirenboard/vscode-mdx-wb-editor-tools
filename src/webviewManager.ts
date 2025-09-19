@@ -67,19 +67,18 @@ export class WebviewManager {
   }
 
   private createPreviewPanel(document: vscode.TextDocument) {
-    const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    const localResourceRoots = [
-          vscode.Uri.file(path.join(ws ?? '', 'public')),
-      vscode.Uri.file(path.join(ws ?? '', 'content')),
-      vscode.Uri.file(path.join(this.context.extensionPath, 'media'))
-    ];
+    const wf = vscode.workspace.getWorkspaceFolder(document.uri)
+      ?? vscode.workspace.workspaceFolders?.[0];
 
-    if (process.platform === 'darwin') {
-      localResourceRoots.push(
-        vscode.Uri.file('/'),
-        vscode.Uri.file(path.dirname(document.uri.fsPath))
-      );
-  }
+    const localResourceRoots = [
+      // папка текущего документа (для относительных картинок)
+      vscode.Uri.file(path.dirname(document.uri.fsPath)),
+      // корни контента рабочей папки
+      ...(wf ? [vscode.Uri.joinPath(wf.uri, 'public')] : []),
+      ...(wf ? [vscode.Uri.joinPath(wf.uri, 'content')] : []),
+      // ресурсы расширения
+      vscode.Uri.joinPath(this.context.extensionUri, 'media'),
+    ];
 
     this.previewPanel = vscode.window.createWebviewPanel(
       'mdxPreview',
@@ -99,7 +98,7 @@ export class WebviewManager {
 
     this.previewDocumentUri = document.uri;
     this.updateWebviewContentFromUri(document.uri);
-    }
+  }
   private updateWebviewContent(document: vscode.TextDocument) {
     if (!this.previewPanel) return;
 
@@ -112,8 +111,8 @@ export class WebviewManager {
       );
     } catch (error) {
       console.error('Preview update error:', error);
+    }
   }
-}
 
   private updateWebviewContentFromUri(uri: vscode.Uri | undefined) {
     if (!uri) return;
