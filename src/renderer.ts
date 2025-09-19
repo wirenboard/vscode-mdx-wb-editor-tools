@@ -37,12 +37,13 @@ export class MarkdownRenderer {
     if (!relativePath) return "";
 
     try {
-      const normalizedPath = relativePath.replace(/\\/g, "/");
+      const normalizedPath = relativePath.replace(/\\/g, "/").replace(/^\.\//, "");
 
       const imgPathRegex = /^\/?img\//;
       if (imgPathRegex.test(normalizedPath)) {
         const assetPath = normalizedPath.replace(imgPathRegex, "");
-        const wf = vscode.workspace.workspaceFolders?.[0];
+        const wf = vscode.workspace.getWorkspaceFolder(documentUri)
+          ?? vscode.workspace.workspaceFolders?.[0];
         if (!wf) {
           console.error("No workspace folder to resolve /img path");
           return "";
@@ -70,10 +71,6 @@ export class MarkdownRenderer {
 
   private createWebviewUri(webview: vscode.Webview, fsPath: string): string {
     try {
-      if (!fs.existsSync(fsPath)) {
-        console.error("File not found:", fsPath);
-        return "";
-      }
       const fileUri = vscode.Uri.file(fsPath);
       return webview.asWebviewUri(fileUri).toString();
     } catch (error) {
@@ -81,6 +78,7 @@ export class MarkdownRenderer {
       return "";
     }
   }
+
 
   private normalizeSize(value: string | undefined, fallback: string): string {
     if (!value) return fallback;
@@ -221,14 +219,14 @@ export class MarkdownRenderer {
           if (!includePath) {
             return this.wrapError("Include path is missing");
           }
-      
+
           // Получаем абсолютный путь к корню проекта из текущего файла
           const docPath = docUri.fsPath;
           const projectRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
           if (!projectRoot) {
             return this.wrapError("Workspace root not found");
           }
-      
+
           // Строим абсолютный путь к инклюду
           const absPath = path.join(
             projectRoot,
@@ -236,11 +234,11 @@ export class MarkdownRenderer {
             docPath.split(path.sep).includes("ru") ? "ru" : "en",
             ...includePath.replace(/^\//, "").split("/").filter(Boolean)
           ) + ".md";
-      
+
           if (!fs.existsSync(absPath)) {
             return this.wrapError(`Include file not found: ${absPath}`);
           }
-      
+
           const content = fs.readFileSync(absPath, "utf8");
           // Передаем путь к инклюду как базовый для обработки медиа
           return this.processMarkdownWithComponents(content, webview, vscode.Uri.file(absPath));
@@ -256,12 +254,12 @@ export class MarkdownRenderer {
       },
       summary: (attrs, webview, docUri) => {
         // Полностью ручная обработка контента без markdown-it
-        const content = attrs.content 
+        const content = attrs.content
           ? attrs.content
-              .replace(/<\/?p>/g, '') // Удаляем все теги p
-              .trim()
+            .replace(/<\/?p>/g, '') // Удаляем все теги p
+            .trim()
           : "";
-          
+
         return this.templateManager.getTemplates().summary({
           content,
           error: null,
@@ -272,7 +270,7 @@ export class MarkdownRenderer {
           content: attrs.content || "",
           error: null,
         });
-      },     
+      },
     };
   }
 
@@ -282,7 +280,7 @@ export class MarkdownRenderer {
     documentUri: vscode.Uri
   ): string {
     const parsed = this.parser.parseComponents(text);
-  
+
     const processNode = (node: string | Component): string => {
       if (typeof node === "string") {
         return this.md.render(node);
@@ -291,7 +289,7 @@ export class MarkdownRenderer {
         if (!renderer) {
           return this.wrapError(`Render not found for component: ${node.componentName}`);
         }
-  
+
         // Рекурсивно обрабатываем детей для блочных компонентов
         if (node.isBlock && "children" in node) {
           const childrenContent = node.children.map(processNode).join("");
@@ -301,11 +299,11 @@ export class MarkdownRenderer {
             documentUri
           );
         }
-  
+
         return renderer(node.attributes, webview, documentUri);
       }
     };
-  
+
     return parsed.map(processNode).join("");
   }
 
@@ -429,8 +427,7 @@ export class MarkdownRenderer {
     } catch (error) {
       console.error(`Frontmatter attribute "${attributeName}" error:`, error);
       return this.wrapError(
-        `Invalid format in frontmatter attribute <b>"${attributeName}"</b>: ${
-          error instanceof Error ? error.message : String(error)
+        `Invalid format in frontmatter attribute <b>"${attributeName}"</b>: ${error instanceof Error ? error.message : String(error)
         }`
       );
     }

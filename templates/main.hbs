@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy"
+  content="default-src 'none';
+           img-src ${panel.webview.cspSource} https: data:;
+           style-src ${panel.webview.cspSource} 'unsafe-inline';
+           script-src ${panel.webview.cspSource};
+           font-src ${panel.webview.cspSource} data:;"/>
   <style>{{styles}}</style>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
