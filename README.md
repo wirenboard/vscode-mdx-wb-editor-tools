@@ -166,6 +166,10 @@ private componentRenderers: Record<string, ComponentRenderer> = {
 }
 ```
 
+#### 6. Сниппеты и справка
+
+Описать новый компонент в файле `snippets/components.json`.
+
 #### Пути к картинкам
 
 Если надо отрисовать картинки, то путь к ним надо подготовить:

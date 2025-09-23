@@ -235,28 +235,24 @@
     "prefix": "wbs-md-product",
     "body": [
       "---",
-      "article: ${1:WB-MSW4 }",
-      "name: ${2:WB-MSW v.4}",
-      "type: ${4:Настенный комбинированный датчик}",
-      "title: ${4:Настенный комбинированный датчик c RS-485, Modbus RTU}",
-      "sub_title: ${5:Температура, влажность, освещённость, шум, уровень CO₂ и VOC}",
-      "cover: ${6:wb-msw-v4/wb-msw-v4-main.png}",
-      "documentation: ${7:https://wirenboard.com/wiki/WB-MSW_v.4_Modbus_Sensor}",
-      "meta: ${8:SEO описание страницы}",
-      "keywords: ${9:SEO ключевые слова через запятую}",
+      "article: WB-MODULE",
+      "cover: wb-module/wb-module-main.png",
+      "documentation: https://wirenboard.com/wiki/WB-MODULE",
+      "meta: ",
+      "keywords: ",
       "images: [",
-      "  [\"${10:wb-msw-v4/wb-msw-v4-1.png}\"],",
-      "  [\"${11:wb-msw-v4/wb-msw-v4-2.png}\"]",
+      "  [\"wb-module/wb-module-1.png\"],",
+      "  [\"wb-module/wb-module-2.png\"]",
       "]",
       "video: [",
-      "  [\"${12:https://peertube.wirenboard.com/videolink}\"],",
-      "  [\"${13:https://peertube.wirenboard.com/videolink}\"]",
+      "  [\"https://peertube.wirenboard.com/w/dWoKUA1staBV8X6sPmRwfo\"],",
+      "  [\"https://peertube.wirenboard.com/w/dbi1EHu4SC5WYmhCcjaidm\"]",
       "]",
-      "use_cases: ${14:[\"liten_magnit\", \"techsensor_module_cafe\", \"rekota_hotel_vertical\"]}",
+      "use_cases: [\"liten_magnit\", \"techsensor_module_cafe\"]",
       "---",
       "::product",
       "#description",
-      "${15:Описание самого товара, которое отображается рядом с ценой}",
+      "Описание самого товара, которое отображается рядом с ценой",
       "#info",
       "## Основные характеристики",
       "::product-section{title=\"Название секции 1\"}",
@@ -284,18 +280,6 @@
         "article": {
           "description": "Артикул: WB-MSW4"
         },
-        "name": {
-          "description": "Модель: WB-MSW v.4"
-        },
-        "type": {
-          "description": "Тип: Настенный комбинированный датчик"
-        },
-        "title": {
-          "description": "Заголовок: Настенный комбинированный датчик c RS-485, Modbus RTU"
-        },
-        "sub_title": {
-          "description": "Подзаголовок: Температура, влажность, освещённость, шум, уровень CO₂ и VOC, движение, ИК-передатчик."
-        },
         "cover": {
           "description": "Путь к главному фото товара в PNG (например, wb-msw-v4/wb-msw-v4-main.png)"
         },        
@@ -312,7 +296,7 @@
           "description": "Массив из ссылок на фото товара [[\"wb-msw-v4/wb-msw-v4-1.png\"], [\"wb-msw-v4/wb-msw-v4-2.png\"]]"
         },
         "video": {
-          "description": "Массив из ссылок на видео товара. PeerTube для России и YouTube для всего остального мира"
+          "description": "Массив из ссылок на видео товара. PeerTube для RU и YouTube для EN"
         },
         "use_cases": {
           "description": "Массив из 3-6 названий файлов solutions где используется оборудование без расширения md: [\"liten_magnit\", \"techsensor_module_cafe\"]"
