@@ -125,7 +125,7 @@ data='[
 
 #### 4. Реализация рендерера
 
-Добавляем в `renderers.ts`:
+Добавляем в `renderer.ts`:
 
 ```ts
 private componentRenderers: Record<string, ComponentRenderer> = {

@@ -60,6 +60,27 @@
         }
       }
     },
+    "WB Component Link Gallery": {
+      "prefix": "wbs-comp-link-gallery",
+      "body": [
+        ":link-gallery{",
+        "  :data='[",
+        "    [\"${1:URL}\", \"${2:Картинка}\", \"${4:Подпись}\", \"${4:Дата}\"],",
+        "    [\"${3:URL}\", \"${4:Картинка}\"], \"${4:Подпись}\",",
+        "    [\"${19:URL}\", \"${20:Картинка}\"]$0",
+        "  ]'",
+        "}"
+      ],
+      "description": "Галерея ссылок. Подпись и дату можно не указывать.",
+      "docs": {
+        "attributes": {
+          "data": {
+            "description": "JSON-массив данных для галереи ссылок",
+            "default": ""
+          }
+        }
+      }
+    },
     "WB Component Video Player": {
       "prefix": "wbs-comp-video-player",
       "body": [

@@ -1,0 +1,19 @@
+{{#if error}}
+  <div class="errors">
+    <p>{{error}}</p>
+  </div>
+{{else}}
+  <div class="mdx-linkGallery-container" style="display: grid; grid-template-columns: repeat({{gridCols links}}, 1fr);">
+    {{#each links}}
+      <a href="{{url}}" class="mdx-linkGallery-link">
+        <img src="{{src}}" class="mdx-linkGallery-photo" alt="{{caption}}" />
+        {{#if caption}}
+          <h4 class="mdx-linkGallery-title">{{caption}}</h4>
+        {{/if}}
+        {{#if date}}
+          <time class="mdx-linkGallery-date" datetime="{{date}}">{{formatDate date}}</time>
+        {{/if}}
+      </a>
+    {{/each}}
+  </div>
+{{/if}}

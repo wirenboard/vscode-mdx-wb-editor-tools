@@ -119,6 +119,26 @@ export class MarkdownRenderer {
         }
       },
 
+      "link-gallery": (attrs, webview, docUri) => {
+        try {
+          const rawLinks = JSON.parse(attrs.data || "[]");
+          const links = rawLinks.map(([url, src, caption, date]: [string, string, string?, string?]) => ({
+            src: this.resolveRelativePath(webview, docUri, src),
+            url,
+            caption: caption || "",
+            date: date || "",
+          }));
+          return this.templateManager
+            .getTemplates()
+            .linkGallery({ links, error: null });
+        } catch (error) {
+          console.error("Link gallery component error:", error, "attrs:", attrs);
+          return this.templateManager.getTemplates().linkGallery({
+            error: "Invalid link gallery data format",
+          });
+        }
+      },
+
       "video-player": (attrs, webview, docUri) => {
         return this.templateManager.getTemplates().videoPlayer({
           url: attrs.url,
