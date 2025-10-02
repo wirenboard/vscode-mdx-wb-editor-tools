@@ -84,7 +84,7 @@ body {
   object-fit: cover;
 }
 
-.frontmatter-logo{  
+.frontmatter-logo{
   display: block;
   max-height: 70px;
   max-width: 100%;
@@ -123,6 +123,59 @@ body {
 
 }
 
+/* === Галерея ссылок === */
+.mdx-linkGallery-container {
+  gap: 12px;
+  max-width: 100%;
+  clear: both;
+  display: grid;
+  width: 100%;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mdx-linkGallery-link {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.mdx-linkGallery-photo {
+  width: 100%;
+  height: 160px;
+  border-radius: 12px;
+  text-decoration: none;
+  object-fit: cover;
+  border: 1px solid #f7f7f7;
+  min-height: 125px;
+  flex-shrink: 0;
+
+  @media (min-width: 400px) and (max-width: 940px) {
+    width: 100%;
+    max-width: 220px;
+    height: 100%;
+    max-height: 126px;
+  }
+
+  @media (max-width: 460px) {
+    width: 100%;
+    height: 160px;
+  }
+}
+
+.mdx-linkGallery-title {
+  margin: 6px 0 12px;
+  font-weight: bold;
+  color: #7a7a7a;
+}
+
+.mdx-linkGallery-date {
+  font-size: 16px;
+  color: #7a7a7a;
+}
+
 /* === Общие медиа-элементы === */
 .mdx-photo{
   background: var(--item-color);
@@ -131,7 +184,7 @@ body {
 }
 
 .hidden-overflow{
-  overflow: hidden;  
+  overflow: hidden;
 }
 
 div.product-section .mdx-photo {

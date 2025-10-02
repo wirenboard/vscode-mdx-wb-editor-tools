@@ -1,16 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import MarkdownIt from 'markdown-it';
 import * as Handlebars from 'handlebars';
-
-const md = new MarkdownIt({ html: true });
+import helpers from './helpers';
 
 export class TemplateManager {
   private readonly templates: {
     main: Handlebars.TemplateDelegate;
     photo: Handlebars.TemplateDelegate;
     gallery: Handlebars.TemplateDelegate;
+    linkGallery: Handlebars.TemplateDelegate;
     videoPlayer: Handlebars.TemplateDelegate;
     videoGallery: Handlebars.TemplateDelegate;
     frontmatter: Handlebars.TemplateDelegate;
@@ -26,17 +25,15 @@ export class TemplateManager {
   constructor(context: vscode.ExtensionContext) {
     const templatesDir = path.join(context.extensionPath, 'templates');
 
-    Handlebars.registerHelper('md', (text: string) => {
-      return new Handlebars.SafeString(md.render(text));
-    });
-    Handlebars.registerHelper('isTitle', (key) => key === 'title');
-    Handlebars.registerHelper('isCover', (key) => ['cover'].includes(String(key)));
-    Handlebars.registerHelper('isLogo', (key) => ['logo'].includes(String(key)));
+    for (const [key, helper] of Object.entries(helpers)) {
+      Handlebars.registerHelper(key, helper);
+    }
 
     this.templates = {
       main: this.compileTemplate(path.join(templatesDir, 'main.hbs')),
       photo: this.compileTemplate(path.join(templatesDir, 'photo.hbs')),
       gallery: this.compileTemplate(path.join(templatesDir, 'gallery.hbs')),
+      linkGallery: this.compileTemplate(path.join(templatesDir, 'link-gallery.hbs')),
       videoPlayer: this.compileTemplate(path.join(templatesDir, 'video-player.hbs')),
       videoGallery: this.compileTemplate(path.join(templatesDir, 'video-gallery.hbs')),
       frontmatter: this.compileTemplate(path.join(templatesDir, 'frontmatter.hbs')),

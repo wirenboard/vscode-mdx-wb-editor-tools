@@ -125,7 +125,7 @@ data='[
 
 #### 4. Реализация рендерера
 
-Добавляем в `renderers.ts`:
+Добавляем в `renderer.ts`:
 
 ```ts
 private componentRenderers: Record<string, ComponentRenderer> = {
@@ -207,3 +207,7 @@ npm run package
 codium --install-extension ./dist/vscode-mdx-wb-editor-tools-X.Y.Z.vsix --force
 vscode --install-extension ./dist/vscode-mdx-wb-editor-tools-X.Y.Z.vsix --force
 ```
+
+#### Пул реквест
+
+При завершении доработки не забудьте увеличить версию пакета в package.json
