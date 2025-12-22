@@ -93,6 +93,50 @@ body {
   /* object-fit: cover; */
 }
 
+/* Frontmatter list object styling: add bottom border per object */
+.frontmatter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.frontmatter-list li {
+  padding: 0.25rem 0;
+}
+.frontmatter-list .frontmatter-object {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ddd;
+}
+.frontmatter-list .frontmatter-object:last-child {
+  border-bottom: none;
+}
+.frontmatter-object-row {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+}
+.frontmatter-object-row .frontmatter-key {
+  font-weight: 600;
+  color: #333;
+  flex: 0 0 auto;
+}
+.frontmatter-object-row .frontmatter-val {
+  flex: 1 1 0;
+  text-align: right;
+  word-break: break-word;
+}
+.frontmatter-list .frontmatter-object {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.frontmatter-object-inner {
+  width: 100%;
+}
+
 /* мобильная перестройка таблицы */
 @media (max-width: 768px) {
   .frontmatter-table thead { display: none; }

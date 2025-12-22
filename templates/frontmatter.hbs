@@ -14,7 +14,26 @@
             <img src="{{this}}" alt="Cover image" class="frontmatter-cover">
           {{else if (isLogo @key)}}
             <img src="{{this}}" alt="Logo" class="frontmatter-logo">
-          {{else}}          
+          {{else if (isArray this)}}
+            <ul class="frontmatter-list">
+              {{#each this}}
+                {{#if (isObject this)}}
+                  <li class="frontmatter-object">
+                    <div class="frontmatter-object-inner">
+                      {{#each this}}
+                        <div class="frontmatter-object-row">
+                          <span class="frontmatter-key">{{@key}}:</span>
+                          <span class="frontmatter-val">{{{this}}}</span>
+                        </div>
+                      {{/each}}
+                    </div>
+                  </li>
+                {{else}}
+                  <li>{{{this}}}</li>
+                {{/if}}
+              {{/each}}
+            </ul>
+          {{else}}
             {{{this}}}
           {{/if}}
         </td>
@@ -22,5 +41,4 @@
     </tr>
   </tbody>
 </table>
-
 <h1>{{title}}</h1>
