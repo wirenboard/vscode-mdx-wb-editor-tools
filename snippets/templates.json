@@ -237,6 +237,7 @@
       "---",
       "article: WB-MODULE",
       "cover: wb-module/wb-module-main.png",
+      "catalogCover: wb-module/wb-module-side.png",
       "documentation: https://wirenboard.com/wiki/WB-MODULE",
       "meta: ",
       "keywords: ",
@@ -283,6 +284,9 @@
         "cover": {
           "description": "Путь к главному фото товара в PNG (например, wb-msw-v4/wb-msw-v4-main.png)"
         },
+        "catalogCover": {
+          "description": "Путь к фото для каталога в PNG (например, wb-msw-v4/wb-msw-v4-side.png)"
+        },
         "documentation": {
           "description": "Ссылка на документацию"
         },
@@ -312,7 +316,7 @@
       "url: ${2}",
       "date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
       "cover: ${3:my_video/my_video.jpg}",
-      "category: ${4:educational}",      
+      "category: ${4:educational}",
       "---"
     ],
     "description": "Шаблон записи о видеоролике",
