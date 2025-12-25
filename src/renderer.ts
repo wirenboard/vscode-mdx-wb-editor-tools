@@ -86,6 +86,49 @@ export class MarkdownRenderer {
     return /\d$/.test(trimmed) ? `${trimmed}px` : trimmed;
   }
 
+  private parseFrontmatterArray(raw: string): any[] {
+    try {
+      const trimmed = raw.trim();
+      if (!trimmed) return [];
+      if (trimmed.startsWith("[")) {
+        return JSON.parse(trimmed);
+      }
+
+      const lines = trimmed.split(/\r?\n/).map((l) => l.replace(/^\s+/, ""));
+      const items: any[] = [];
+      let current: Record<string, string> | null = null;
+
+      for (const line of lines) {
+        if (!line) continue;
+        if (line.startsWith("-")) {
+          if (current) items.push(current);
+          current = {};
+          const rest = line.replace(/^[-\s]*/, "");
+          const kv = rest.match(/^([^:]+):\s*["']?(.*?)["']?\s*$/);
+          if (kv && current) {
+            current[kv[1].trim()] = kv[2];
+          } else {
+            items.push(rest.trim());
+            current = null;
+          }
+        } else {
+          const kv = line.match(/^([^:]+):\s*["']?(.*?)["']?\s*$/);
+          if (kv && current) {
+            current[kv[1].trim()] = kv[2];
+          } else if (!current) {
+            items.push(line.trim());
+          }
+        }
+      }
+
+      if (current) items.push(current);
+      return items;
+    } catch (err) {
+      console.error("Error parsing frontmatter array:", err);
+      return [];
+    }
+  }
+
   private createComponentRenderers(): Record<string, ComponentRenderer> {
     return {
       photo: (attrs, webview, docUri) => {
@@ -419,6 +462,28 @@ export class MarkdownRenderer {
           const colorClass = fileExists ? 'valid-use-case' : 'invalid-use-case';
           return `<li><span class="${colorClass}">${trimmedCaseName}</span></li>`;
         }).join('')}</ul>`;
+      }
+
+      // Разбор frontmatter-полей: для любых полей, содержащих
+      // JSON-массив или YAML-подобный список (- key: val),
+      // преобразуем строку в массив объектов/значений.
+      for (const [attrKey, attrVal] of Object.entries(attributes)) {
+        if (typeof attrVal !== "string") continue;
+        const raw = attrVal.trim();
+        if (!raw) continue;
+
+        const looksLikeList = raw.startsWith("[") || /^\s*-\s/m.test(attrVal);
+        if (!looksLikeList) continue;
+
+        try {
+          const parsed = this.parseFrontmatterArray(attrVal);
+          // Если парсер вернул непустой массив, сохраняем его в attributes
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            attributes[attrKey] = parsed as any;
+          }
+        } catch (err) {
+          console.error(`Error parsing frontmatter attribute "${attrKey}":`, err);
+        }
       }
 
       console.log("Generated additional components:", additionalComponents);

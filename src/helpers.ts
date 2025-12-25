@@ -25,6 +25,8 @@ const helpers: Record<string, HelperDelegate> = {
     const n = links.length;
     return n >= 4 ? 4 : n;
   },
+  isArray: (v: any) => Array.isArray(v),
+  isObject: (v: any) => v !== null && typeof v === 'object' && !Array.isArray(v),
 };
 
 export default helpers;

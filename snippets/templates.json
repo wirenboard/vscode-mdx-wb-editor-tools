@@ -340,5 +340,42 @@
         }
       }
     }
+  },
+  "WB Educational Video Template": {
+    "prefix": "wbs-md-education-video",
+    "body": [
+      "---",
+      "title: ${1:Название видео | Автор}",
+      "url: ${2}",
+      "date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}",
+      "cover: ${3:my_video/my_video.jpg}",
+      "chapters:",
+      "  - time: ${4:00:00}",
+      "    title: ${5:Название главы 1}",
+      "  - time: ${6:05:30}",
+      "    title: ${7:Название главы 2}",
+      "---"
+    ],
+    "description": "Шаблон записи о образовательном видеоролике с навигацией",
+    "docs": {
+      "path": "video-education/**",
+      "attributes": {
+        "title": {
+          "description": "Название видео"
+        },
+        "url": {
+          "description": "URL видео. PeerTube для русского сайта и YouTube для английского."
+        },
+        "cover": {
+          "description": "Путь к обложке ролика (например, my_video/my_video.jpg). Указано — видео откроется в новом окне. Не указано — в страницу будет встроен плеер."
+        },
+        "date": {
+          "description": "Дата публикации (YYYY-MM-DD, например, 2023-01-21)"
+        },
+        "chapters": {
+          "description": "Тайминги видео"
+        }
+      }
+    }
   }
 }
