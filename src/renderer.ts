@@ -230,7 +230,7 @@ export class MarkdownRenderer {
           if (key === "title") {
             title = value;
           } else {
-            items[key] = ["cover", "logo"].includes(key)
+            items[key] = ["cover", "catalogCover", "logo"].includes(key)
               ? this.resolveRelativePath(webview, docUri, value)
               : value;
           }

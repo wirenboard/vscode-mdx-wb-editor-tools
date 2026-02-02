@@ -7,6 +7,7 @@ const helpers: Record<string, HelperDelegate> = {
   md: (text: string) => new SafeString(md.render(text)),
   isTitle: (key: string) => key === 'title',
   isCover: (key: string) => ['cover'].includes(String(key)),
+  isCatalogCover: (key: string) => ['catalogCover'].includes(String(key)),
   isLogo: (key: string) => ['logo'].includes(String(key)),
   formatDate: (date: string) => {
     if (!date) return "";
