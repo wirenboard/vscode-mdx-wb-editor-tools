@@ -12,6 +12,8 @@
         <td data-label="{{@key}}">
           {{#if (isCover @key)}}
             <img src="{{this}}" alt="Cover image" class="frontmatter-cover">
+          {{else if (isCatalogCover @key)}}
+            <img src="{{this}}" alt="Catalog cover image" class="frontmatter-cover">
           {{else if (isLogo @key)}}
             <img src="{{this}}" alt="Logo" class="frontmatter-logo">
           {{else if (isArray this)}}
